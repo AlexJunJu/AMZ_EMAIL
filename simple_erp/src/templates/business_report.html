@@ -1,0 +1,71 @@
+<html>
+<body>
+
+<h1>Daily Information</h1>
+<table border="1">
+<tr>
+<td align="center">ID</td>
+<td align="center">Marketplace_id</td>
+
+<td align="center">Parent_Asin</td>
+<td align="center">Child_Asin</td>
+
+<td align="center">Title</td>
+
+<td align="center">Sessions</td>
+<td align="center">Session_Percentage</td>
+
+<td align="center">Page_Views</td>
+<td align="center">Page_Views_Percentage</td>
+
+
+<td align="center">Buy_Box_Percentage</td>
+
+
+<td align="center">Units_Ordered</td>
+<td align="center">Unit_Session_Percentage</td>
+
+<td align="center">Total_Order_Items</td>
+<td align="center">Ordered_Product_Sales</td>
+
+<td align="center">Report_Date</td>
+
+
+</tr>
+	{% for busineessReport in BusinessReportList %}
+					<tr>
+						<td align="center">{{loop.index}}</td>
+						<td align="center">{{busineessReport.marketplace_id}}</td>
+						<td align="center">{{busineessReport.parent_asin}}</td>
+						<td align="center">{{busineessReport.child_asin}}</td>
+
+						<td align="center">{{busineessReport.title}}</td>
+
+						<td align="center">{{busineessReport.sessions}}</td>
+						<td align="center">{{busineessReport.session_percentage}}</td>
+
+
+
+						<td align="center">{{busineessReport.page_views}}</td>
+						<td align="center">{{busineessReport.page_views_percentage}}</td>
+
+						<td align="center">{{busineessReport.buy_box_percentage}}</td>
+
+
+						<td align="center">{{busineessReport.units_ordered}}</td>
+						<td align="center">{{busineessReport.unit_session_percentage}}</td>
+
+
+
+						<td align="center">{{busineessReport.total_order_items}}</td>
+						<td align="center">{{busineessReport.ordered_product_sales}}</td>
+
+
+						<td align="center">{{busineessReport.report_date}}</td>
+					
+						
+					</tr>
+	{% endfor %}
+</table>
+</body>
+</html>

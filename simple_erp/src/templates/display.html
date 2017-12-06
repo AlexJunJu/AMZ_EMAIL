@@ -1,0 +1,63 @@
+<html>
+<body>
+
+<h1>Daily Information</h1>
+<table border="1">
+<tr>
+<td align="center">ID</td>
+<td align="center">Marketplace_id</td>
+<td align="center">name</td>
+<td align="center">ASIN</td>
+<td align="center">SKU</td>
+<td align="center">FNSKU</td>
+<td align="center">Review_Cnt</td>
+<td align="center">Review_Date</td>
+
+<td align="center">Availabele</td>
+<td align="center">Reserved</td>
+<td align="center">Inventory</td>
+
+<!-- <td align="center">Shipped</td>
+<td align="center">Received</td> -->
+<td align="center">Inbound</td>
+
+<td align="center">Average_Orders_Qty</td>
+<td align="center">Quantity_Left_Days</td>
+<td align="center">Replenish_Stock_Qty</td>
+
+<td align="center">Best_Seller_Rank</td>
+
+</tr>
+	{% for dailyInfo in DailyInfoList %}
+					<tr>
+						<td align="center">{{loop.index}}</td>
+						<td align="center">{{dailyInfo.marketplace_id}}</td>
+						<td align="center">{{dailyInfo.name}}</td>
+						<td align="center">{{dailyInfo.asin}}</td>
+						<td align="center">{{dailyInfo.sku}}</td>
+						<td align="center">{{dailyInfo.fnsku}}</td>
+						<td align="center">{{dailyInfo.review_cnt}}</td>
+						<td align="center">{{dailyInfo.review_date}}</td>
+
+						
+						<td align="center">{{dailyInfo.available_qty}}</td>
+						<td align="center">{{dailyInfo.reserved_qty}}</td>
+						<td align="center">{{dailyInfo.inventory_qty}}</td>
+
+
+
+						<!-- <td align="center">{{dailyInfo.shipped_qty}}</td>
+						<td align="center">{{dailyInfo.received_qty}}</td> -->
+						<td align="center">{{dailyInfo.inbound_qty}}</td>
+
+
+						<td align="center">{{dailyInfo.average_orders_qty}}</td>
+						<td align="center">{{dailyInfo.quantity_left_days}}</td>
+						<td align="center">{{dailyInfo.replenish_stock_qty}}</td>
+						<td align="center">{{dailyInfo.seller_ranks}}</td>
+						
+					</tr>
+	{% endfor %}
+</table>
+</body>
+</html>
