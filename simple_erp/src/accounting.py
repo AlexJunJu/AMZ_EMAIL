@@ -25,9 +25,9 @@ _MONTH_2_NO_Eg = {
 }
 
 _MONTH_2_NO_Fr = {
-	"jan":"01",
-	"fév":"02",
-	"mar":"03",
+	"janv":"01",
+	"févr":"02",
+	"mars":"03",
 	"avr":"04",
 	"mai":"05",
 	"juin":"06",
@@ -36,7 +36,7 @@ _MONTH_2_NO_Fr = {
 	"sept":"09",
 	"oct":"10",
 	"nov":"11",
-	"dic":"12"
+	"déc":"12"
 }
 _MONTH_2_NO_It = {
 	"gen":"01",
@@ -85,6 +85,15 @@ _EU = ["uk","de","fr","it","es"]
 def transaction_info_into_database():
 
 	def _formate_datetime(state,date_time):
+
+		def _formate_datetime_fr(date_time):
+			blanks_list_of_datetime = []
+			i = 0
+			for i in range(0,len(date_time)+1):
+				if date_time[i:i+1] == " " :
+					blanks_list_of_datetime.append(i)
+			return blanks_list_of_datetime
+
 		if state in ("ye","us"):
 			if date_time.find(',') < 6:
 				date_time = date_time[:4]+"0"+date_time[4:]
@@ -137,10 +146,16 @@ def transaction_info_into_database():
 			datetime = date_time[7:11]+'-'+_MONTH_2_NO_It[date_time[3:6]]+'-'+date_time[:2]+date_time[11:date_time.find('GMT')-1].replace('.',':')
 
 		if state in ("fr"):
-			if len(date_time) <31:
+			if date_time.find(" ") <2:
 				date_time="0"+date_time
+				blanks_list_of_datetime = _formate_datetime_fr(date_time)
 				print(date_time)
-			datetime = date_time[8:12]+'-'+_MONTH_2_NO_Fr[date_time[3:6]]+'-'+date_time[:2]+date_time[12:date_time.find('UTC')-1].replace('.',':')
+			else:
+				blanks_list_of_datetime = _formate_datetime_fr(date_time)
+			datetime = (date_time[blanks_list_of_datetime[1]+1:blanks_list_of_datetime[1]+5]+'-'+
+						_MONTH_2_NO_Fr[date_time[blanks_list_of_datetime[0]:blanks_list_of_datetime[1]].strip()]+'-'+
+						date_time[:blanks_list_of_datetime[0]]+
+						date_time[blanks_list_of_datetime[2]:date_time.find('UTC')-1].replace('.',':'))
 
 		return datetime
 		
@@ -148,7 +163,7 @@ def transaction_info_into_database():
 		if state in ("ye","us","ca","uk") :
 			money = money.replace(',','')
 		if state in ("de","fr","it","es"):
-			money = money.replace('.','').replace(',','.')
+			money = money.replace(u'\xa0', u'').replace('.','').replace(',','.')
 		return money
 
 	def _formate_type(type):
@@ -177,7 +192,7 @@ def transaction_info_into_database():
 
 	def _process_file(state):
 		#read the every state csv and write into database
-		with open(file='C:\\Users\\ACEEC\\Desktop\\amz_payment\\2017OctMonthlyTransaction_%s.csv' % state,
+		with open(file='C:\\Users\\ACEEC\\Desktop\\amz_payment\\2017MayMonthlyTransaction_%s.csv' % state,
 				  mode='r',
 				  encoding='utf-8'
 				  ) as csv_file:
@@ -245,22 +260,22 @@ def transaction_info_into_database():
 			print('byebye :transaction details of %s write to database is done !' % state)
 	 	
 	# just for unit test
-	# _process_file("")
+	_process_file("fr")
 	
-	states = ["ye","us","ca","uk","de","fr","it","es"]
-	try:
-		for state in states:
-			try:
-				_process_file(state)
-			except Exception as e:
-				print("%s transaction writing into database failure" % state )
-				break
-				raise
-			else:
-				time.sleep(5)
-	except Exception as e:
-		raise
-		os._exit(0)
+	# states = ["ye","us","ca","uk","de","fr","it","es"]
+	# try:
+	# 	for state in states:
+	# 		try:
+	# 			_process_file(state)
+	# 		except Exception as e:
+	# 			print("%s transaction writing into database failure" % state )
+	# 			break
+	# 			raise
+	# 		else:
+	# 			time.sleep(5)
+	# except Exception as e:
+	# 	raise
+	# 	os._exit(0)
 
 
 
@@ -719,6 +734,6 @@ def monthly_sku_qty_profit_statistics_new():
 
 if __name__ == '__main__':
 
-	#transaction_info_into_database()
+	transaction_info_into_database()
 	#monthly_sku_qty_profit_statistics()
-	monthly_sku_qty_profit_statistics_new()
+	#monthly_sku_qty_profit_statistics_new()

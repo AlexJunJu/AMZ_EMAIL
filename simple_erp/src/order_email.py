@@ -69,10 +69,10 @@ Mit freundlichen Grüßen,
 ring love.
 	'''
 
-	Asin_List =['B06XG98V1M','B073P9H5XF','B071SM7LTR'\
-				'B01LXMBZ0N','B01M4RVJDD','B01N9J8HGQ','B01MZ0C8R0','B01M7UKMR3','B01MRY3M6V','B01N4EID5B','B01MXYW4UK',\
-				'B0722K8PMQ','B07116SJCZ','B071KRM6B6','B0722KDD1C','B071V8WD6G','B0718ZVCKJ','B072FHJ5G6','B072FHJNHP',\
-				'B071F9JR7T','B071KXFSY7','B071DR1255','B06Y2F56SW','B01M0F5JSW','B076JDWS8F','B0742CJ4VR','B074SNBPGM',\
+	Asin_List =['B06XG98V1M','B073P9H5XF','B071SM7LTR'
+				'B01LXMBZ0N','B01M4RVJDD','B01N9J8HGQ','B01MZ0C8R0','B01M7UKMR3','B01MRY3M6V','B01N4EID5B','B01MXYW4UK',
+				'B0722K8PMQ','B07116SJCZ','B071KRM6B6','B0722KDD1C','B071V8WD6G','B0718ZVCKJ','B072FHJ5G6','B072FHJNHP',
+				'B071F9JR7T','B071KXFSY7','B071DR1255','B06Y2F56SW','B01M0F5JSW','B076JDWS8F','B0742CJ4VR','B074SNBPGM',
 				'B074CQY1DT','B074PPPS7F','B0742JJMKD','B0742JPR1S']
 
 
@@ -126,11 +126,6 @@ ring love.
 			# from ipdb import set_trace
 			# set_trace()
 			if buyerOrder.sales_channel in German_oriented_stations:
-				# filename0 = buyerOrder.asin+'-D.jpg'
-				# print(type(filename0))
-				# print(buyerOrder.asin,buyerOrder.amazon_order_id)
-				# print('f:/instruction/'+buyerOrder.asin+'-D.jpg')
-				# print(type('f:/instruction/'+buyerOrder.asin+'-D.jpg'))
 				with open('f:/instruction/'+buyerOrder.asin+'-D.jpg','rb') as f:
 					mime = MIMEBase('image','jpg',filename =buyerOrder.asin+'-D.jpg' )
 					#添加头部必要信息
