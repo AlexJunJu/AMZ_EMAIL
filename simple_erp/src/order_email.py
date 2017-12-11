@@ -69,7 +69,7 @@ Mit freundlichen Grüßen,
 ring love.
 	'''
 
-	Asin_List =['B06XG98V1M','B073P9H5XF','B071SM7LTR'
+	Asin_List =['B06XG98V1M','B073P9H5XF','B071SM7LTR',
 				'B01LXMBZ0N','B01M4RVJDD','B01N9J8HGQ','B01MZ0C8R0','B01M7UKMR3','B01MRY3M6V','B01N4EID5B','B01MXYW4UK',
 				'B0722K8PMQ','B07116SJCZ','B071KRM6B6','B0722KDD1C','B071V8WD6G','B0718ZVCKJ','B072FHJ5G6','B072FHJNHP',
 				'B071F9JR7T','B071KXFSY7','B071DR1255','B06Y2F56SW','B01M0F5JSW','B076JDWS8F','B0742CJ4VR','B074SNBPGM',
@@ -203,7 +203,7 @@ ring love.
 			
 
 			mail_server.close()
-			time.sleep(random.randint(25,35))
+			time.sleep(random.randint(30,35))
 
 	print('byebye')
 

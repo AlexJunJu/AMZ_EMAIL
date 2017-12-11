@@ -5249,7 +5249,7 @@ ORDER BY last_week.marketplace_id ASC,last_week.name
                                                 cls.fulfillment_channel == 'Amazon',
                                                 #cls.order_status == 'Shipped',
                                                 #cls.item_status == 'Shipped',
-                                                #cls.payments_date.between('2017-12-01 21:40:26+00','2017-12-02 23:59:59+00')
+                                                #cls.payments_date.between('2017-12-08 00:04:21+00','2017-12-08 11:39:00+00')
                                                 #以下两条仅为测试用
                                                 # cls.amazon_order_id == '404-1645955-5349145',
                                                 # cls.sales_channel == 'Amazon.it'

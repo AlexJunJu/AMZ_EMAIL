@@ -35,8 +35,8 @@ _MONTH_2_NO_Fr = {
 	"août":"08",
 	"sept":"09",
 	"oct":"10",
-	"nov":"11",
-	"déc":"12"
+	"nov.":"11",
+	"déc.":"12"
 }
 _MONTH_2_NO_It = {
 	"gen":"01",
@@ -63,18 +63,27 @@ _STATE_2_AMZ = {
 	"es":"amazon.es"
 }
 _TYPE = {
-	"Adjustment":["Adjustment","Anpassung",],
+	"A-to-z Guarantee Claim":["A-to-z Guarantee Claim",],
+	"Adjustment":["Adjustment","Anpassung","Ajustement","Ajuste"],
 	"Debt":["Debt",],
+	"FBA Customer Return Fee":["FBA Customer Return Fee",
+							   "Erstattung durch Rückbuchung"
+							  ],
 	"FBA Inventory Fee":["FBA Inventory Fee",
 						 "Versand durch Amazon Lagergebühr",
 						 "Frais de stock Expédié par Amazon",
 						 "Costo di stoccaggio Logistica di Amazon",
 						 "Tarifas de inventario de Logística de Amazon"
-						 ],
+						],
 	"Order":["Order","Bestellung","Commande","Ordine","Pedido"],
-	"Refund":["Refund","Erstattung","Remboursement","Rimborso"],
+	"Refund":["Refund","Erstattung","Remboursement","Rimborso","Reembolso"],
 	"Service Fee":["Service Fee","Servicegebühr",],
-	"Transfer":["Transfer","Übertrag","Transfert","Trasferimento","Transferir"]
+	"Transfer":["Transfer","Übertrag","Transfert","Trasferimento","Transferir"],
+	"Lightning Deal Fee":["Lightning Deal Fee",
+						  "Blitzangebotsgebühr",
+						  "Tarif de la Vente Flash",
+						  "Tarifa de Oferta flash"
+						 ]
 
 }
 
@@ -82,6 +91,7 @@ _North_America = ["ye","us","ca"]
 
 _EU = ["uk","de","fr","it","es"]
 
+_STATE_LIST = ["amazon.com","amazon.ca","amazon.co.uk","amazon.de","amazon.fr","amazon.it","amazon.es"]
 def transaction_info_into_database():
 
 	def _formate_datetime(state,date_time):
@@ -149,11 +159,10 @@ def transaction_info_into_database():
 			if date_time.find(" ") <2:
 				date_time="0"+date_time
 				blanks_list_of_datetime = _formate_datetime_fr(date_time)
-				print(date_time)
 			else:
 				blanks_list_of_datetime = _formate_datetime_fr(date_time)
 			datetime = (date_time[blanks_list_of_datetime[1]+1:blanks_list_of_datetime[1]+5]+'-'+
-						_MONTH_2_NO_Fr[date_time[blanks_list_of_datetime[0]:blanks_list_of_datetime[1]].strip()]+'-'+
+						_MONTH_2_NO_Fr[date_time[blanks_list_of_datetime[0]:blanks_list_of_datetime[1]].replace(".","").strip()]+'-'+
 						date_time[:blanks_list_of_datetime[0]]+
 						date_time[blanks_list_of_datetime[2]:date_time.find('UTC')-1].replace('.',':'))
 
@@ -167,32 +176,32 @@ def transaction_info_into_database():
 		return money
 
 	def _formate_type(type):
+		if type in _TYPE["A-to-z Guarantee Claim"] :
+			type = "A-to-z Guarantee Claim"
 		if type in _TYPE["Adjustment"] :
 			type = "Adjustment"
-
 		if type in _TYPE["Debt"] :
 			type = "Debt"
-
+		if type in _TYPE["FBA Customer Return Fee"] :
+			type = "FBA Customer Return Fee"
 		if type in _TYPE["FBA Inventory Fee"] :
 			type = "FBA Inventory Fee"
-
 		if type in _TYPE["Order"] :
 			type = "Order"
-
 		if type in _TYPE["Refund"] :
 			type = "Refund"
-
 		if type in _TYPE["Service Fee"] :
 			type = "Service Fee"
-
 		if type in _TYPE["Transfer"] :
 			type = "Transfer"
+		if type in _TYPE["Lightning Deal Fee"] :
+			type = "Lightning Deal Fee"
 
 		return type	
 
 	def _process_file(state):
 		#read the every state csv and write into database
-		with open(file='C:\\Users\\ACEEC\\Desktop\\amz_payment\\2017MayMonthlyTransaction_%s.csv' % state,
+		with open(file='C:\\Users\\ACEEC\\Desktop\\amz_payment\\2017AugMonthlyTransaction_%s.csv' % state,
 				  mode='r',
 				  encoding='utf-8'
 				  ) as csv_file:
@@ -257,25 +266,25 @@ def transaction_info_into_database():
 				print("the %s record" % NO)
 				NO += 1
 			BaseMethod.commit()
-			print('byebye :transaction details of %s write to database is done !' % state)
+			print('--------------------------------byebye :transaction details of %s write to database is done !------------------------' % state)
 	 	
-	# just for unit test
-	_process_file("fr")
+	# # just for unit test
+	#_process_file("es")
 	
-	# states = ["ye","us","ca","uk","de","fr","it","es"]
-	# try:
-	# 	for state in states:
-	# 		try:
-	# 			_process_file(state)
-	# 		except Exception as e:
-	# 			print("%s transaction writing into database failure" % state )
-	# 			break
-	# 			raise
-	# 		else:
-	# 			time.sleep(5)
-	# except Exception as e:
-	# 	raise
-	# 	os._exit(0)
+	states = ["ye","us","ca","uk","de","fr","it","es"]
+	try:
+		for state in states:
+			try:
+				_process_file(state)
+			except Exception as e:
+				print("------------------------%s transaction writing into database failure------------------------" % state )
+				raise
+				continue
+			else:
+				time.sleep(5)
+	except Exception as e:
+		raise
+		os._exit(0)
 
 
 
@@ -283,9 +292,31 @@ def transaction_info_into_database():
 # process xlsx by openpysxl
 def monthly_sku_qty_profit_statistics_new():
 
-	_TITLE_LIST = ["sku","quantity","total","profit","fulfillment_channel","station"]
+	def _list_transaction_data(amz_trans_info):
+		trans_list = [
+					  amz_trans_info.sku,
+					  amz_trans_info.quantity,
+					  amz_trans_info.other,
+					  amz_trans_info.total,
+					  amz_trans_info.fulfillment_channel,
+					  amz_trans_info.marketplace
+					 ]
+		return trans_list
 
-	#creat List to collect diffrent state transacion record
+	def _list_other_expenses(otherExpensesInfo):
+		expenses_List = [
+						 otherExpensesInfo.type,
+						 "\t",
+						 "\t",
+						 otherExpensesInfo.expenses,
+						 otherExpensesInfo.marketplace,
+						]
+		return expenses_List
+
+	_TITLE_LIST = ["sku","quantity","total","profit","fulfillment_channel","station"]
+	_EURO_ZONE = ['amazon.de','amazon.fr','amazon.it','amazon.es'] 
+
+	#creat List to collect diffrent states' transacion record
 	COMList = []
 	CAList  = []
 	DEList  = []
@@ -294,10 +325,8 @@ def monthly_sku_qty_profit_statistics_new():
 	ESList  = []
 	EUList  = []
 	UKList = []
-
-	# Classify and statistics of suk,quantity,profits
+	# Classify and statistics of sku,quantity,profits
 	TransInfo = AmzTransactionInfo.accounting_sku_qty_profit_statistics()
-
 	for transInfo in TransInfo:
 		amz_trans_info = AmzTransactionInfo()
 		amz_trans_info.fulfillment_channel = transInfo.fulfillment_channel
@@ -308,51 +337,22 @@ def monthly_sku_qty_profit_statistics_new():
 		amz_trans_info.marketplace = transInfo.marketplace
 
 		if amz_trans_info.marketplace == 'amazon.com':
-			comList = [
-					   amz_trans_info.sku,
-				 	   amz_trans_info.quantity,
-					   amz_trans_info.other,
-					   amz_trans_info.total,
-					   amz_trans_info.fulfillment_channel,
-				 	   amz_trans_info.marketplace
-				 	  ]
-			COMList.append(comList)
-
+			COMList.append(_list_transaction_data(amz_trans_info))
 		if amz_trans_info.marketplace == 'amazon.ca':
-			caList = [
-					   amz_trans_info.sku,
-				 	   amz_trans_info.quantity,
-					   amz_trans_info.other,
-					   amz_trans_info.total,
-					   amz_trans_info.fulfillment_channel,
-				 	   amz_trans_info.marketplace
-				 	  ]				
-			CAList.append(caList)
-
+			CAList.append(_list_transaction_data(amz_trans_info))
+		if amz_trans_info.marketplace in ('amazon.co.uk'):
+			UKList.append(_list_transaction_data(amz_trans_info))
 		if amz_trans_info.marketplace == 'amazon.de':
 			DEList.append(amz_trans_info)
-
 		if amz_trans_info.marketplace == 'amazon.fr':
 			FRList.append(amz_trans_info)
-
 		if amz_trans_info.marketplace == 'amazon.it':
 			ITList.append(amz_trans_info)
-
 		if amz_trans_info.marketplace == 'amazon.es':
 			ESList.append(amz_trans_info)
 
-		if amz_trans_info.marketplace in ('amazon.co.uk'):
-			ukList = [
-					  amz_trans_info.sku,
-				 	  amz_trans_info.quantity,
-					  amz_trans_info.other,
-					  amz_trans_info.total,
-					  amz_trans_info.fulfillment_channel,
-				 	  amz_trans_info.marketplace
-				 	  ]	
-			UKList.append(ukList)
 
-	#classify and statistic of other expenses
+	#creat List to collect diffrent states' expenses record
 	COMEXPENList = []
 	CAEXPENList = []
 	UKEXPENList = []
@@ -360,64 +360,29 @@ def monthly_sku_qty_profit_statistics_new():
 	FREXPENList = []
 	ITEXPENList = []
 	ESEXPENList = []
-
+	#classify and statistic of other expenses
 	OtherExpensesInfo = AmzTransactionInfo.accounting_other_expensess_statistics()
 	for otherExpensesInfo in OtherExpensesInfo:
 
 		if otherExpensesInfo.marketplace.lower() == "amazon.com":
-			comExpeneList = [
-							otherExpensesInfo.type,
-							otherExpensesInfo.expenses,
-							otherExpensesInfo.marketplace,
-							]
-			COMEXPENList.append(otherExpensesInfo)
+			COMEXPENList.append(_list_other_expenses(otherExpensesInfo))
 		if otherExpensesInfo.marketplace.lower() == "amazon.ca":
-			caEXPENList = [
-							otherExpensesInfo.type,
-							otherExpensesInfo.expenses,
-							otherExpensesInfo.marketplace,
-							]
-			CAEXPENList.append(otherExpensesInfo)
+			CAEXPENList.append(_list_other_expenses(otherExpensesInfo))
 		if otherExpensesInfo.marketplace.lower() == "amazon.co.uk":
-			ukEXPENList = [
-							otherExpensesInfo.type,
-							otherExpensesInfo.expenses,
-							otherExpensesInfo.marketplace,
-							]
-			UKEXPENList.append(otherExpensesInfo)
+			UKEXPENList.append(_list_other_expenses(otherExpensesInfo))
 		if otherExpensesInfo.marketplace.lower() == "amazon.de":
-			deEXPENList = [
-							otherExpensesInfo.type,
-							otherExpensesInfo.expenses,
-							otherExpensesInfo.marketplace,
-							]
-			DEEXPENList.append(otherExpensesInfo)
+			DEEXPENList.append(_list_other_expenses(otherExpensesInfo))
 		if otherExpensesInfo.marketplace.lower() == "amazon.fr":
-			frECPENList = [
-							otherExpensesInfo.type,
-							otherExpensesInfo.expenses,
-							otherExpensesInfo.marketplace,
-							]
-			FREXPENList.append(otherExpensesInfo)
+			FREXPENList.append(_list_other_expenses(otherExpensesInfo))
 		if otherExpensesInfo.marketplace.lower() == "amazon.it":
-			itEXPENList = [
-							otherExpensesInfo.type,
-							otherExpensesInfo.expenses,
-							otherExpensesInfo.marketplace,
-							]
-			ITEXPENList.append(otherExpensesInfo)
+			ITEXPENList.append(_list_other_expenses(otherExpensesInfo))
 		if otherExpensesInfo.marketplace.lower() == "amazon.es":
-			esEXPENList = [
-							otherExpensesInfo.type,
-							otherExpensesInfo.expenses,
-							otherExpensesInfo.marketplace,
-							]
-			ESEXPENList.append(otherExpensesInfo)
+			ESEXPENList.append(_list_other_expenses(otherExpensesInfo))
+
 
 	Workbook = openpyxl.Workbook()
-
 	if len(COMList)!=0:
-			com_sheet = Workbook.create_sheet('com',0)
+			com_sheet = Workbook.create_sheet('com')
 			com_sheet.append(_TITLE_LIST)
 			COMrows = len(COMList)
 			COMcols = len(COMList[0])
@@ -429,8 +394,6 @@ def monthly_sku_qty_profit_statistics_new():
 						continue
 			for com in COMEXPENList:
 				com_sheet.append(com)
-
-
 	if len(CAList)!=0:
 			ca_sheet = Workbook.create_sheet('CA')
 			ca_sheet.append(_TITLE_LIST)
@@ -444,15 +407,14 @@ def monthly_sku_qty_profit_statistics_new():
 						continue
 			for ca in CAEXPENList:
 				ca_sheet.append(ca)
-	# add the other station's sku which is not in german into DEList
+
+	# add the other station's sku which is not in germans into DEList
 	for frList in FRList:
 		if frList.sku  not in [deList.sku for deList in DEList]:
 			DEList.append(frList)
-
 	for itList in ITList:
 		if itList.sku not in [deList.sku for deList in DEList]:
 			DEList.append(itList)
-
 	for esList in ESList:
 		if esList.sku not in [deList.sku for deList in DEList]:
 			DEList.append(esList)
@@ -464,20 +426,16 @@ def monthly_sku_qty_profit_statistics_new():
 				deList.quantity+=frList.quantity
 				deList.other+=frList.other
 				deList.total+=frList.total
-
 		for itList in ITList:
 			if  deList.sku == itList.sku and deList.marketplace != itList.marketplace:
 				deList.quantity+=itList.quantity
 				deList.other+=itList.other
-				deList.total+=itList.total
-					
-				
+				deList.total+=itList.total	
 		for esList in ESList:
 			if  deList.sku == esList.sku and deList.marketplace != esList.marketplace:
 				deList.quantity+=esList.quantity
 				deList.other+=esList.other
 				deList.total+=esList.total
-			
 		eulist = [deList.sku,
 				  deList.quantity,
 				  deList.other,
@@ -497,7 +455,7 @@ def monthly_sku_qty_profit_statistics_new():
 		EUcols = len(EUList[0])
 		for euRow in range(0,EUrows):
 			for euCol in range(0,EUcols):
-				if EUList[0][5] in ('amazon.de','amazon.fr','amazon.it','amazon.es'):
+				if EUList[0][5] in _EURO_ZONE:
 					eu_sheet.cell(row=euRow+2,column=euCol+1,value=EUList[euRow][euCol])
 				else:
 					continue
@@ -529,211 +487,9 @@ def monthly_sku_qty_profit_statistics_new():
 	Workbook.save('./%s-%s_new_test.xlsx' % ((datetime.datetime.now().year,datetime.datetime.now().month-1)))
 	print('byebye : Classify and statistics id done !')
 	
-	
-			
-	
-	
-
-# process xlsx by xlsxwriter 
-# def monthly_sku_qty_profit_statistics_old():
-		
-# 		# open .xlsx
-# 		Workbook = xlsxwriter.Workbook('./%s-%s_new.xlsx' % ((datetime.datetime.now().year,datetime.datetime.now().month-1)))
-		
-# 		#creat List to collect diffrent state transacion record
-# 		COMList = []
-# 		CAList  = []
-# 		DEList  = []
-# 		FRList  = []
-# 		ITList  = []
-# 		ESList  = []
-# 		EUList  = []
-# 		UKList = []
-
-# 		# Classify and statistics
-# 		TransInfo = AmzTransactionInfo.accounting_sku_qty_profit_statistics()
-
-# 		for transInfo in TransInfo:
-# 			amz_trans_info = AmzTransactionInfo()
-# 			amz_trans_info.fulfillment_channel = transInfo.fulfillment_channel
-# 			amz_trans_info.sku = transInfo.sku
-# 			amz_trans_info.quantity = transInfo.quantity
-# 			amz_trans_info.other = transInfo.total
-# 			amz_trans_info.total = transInfo.profit
-# 			amz_trans_info.marketplace = transInfo.marketplace
-
-# 			if amz_trans_info.marketplace == 'amazon.com':
-# 				comList = [
-# 						   amz_trans_info.sku,
-# 					 	   amz_trans_info.quantity,
-# 						   amz_trans_info.other,
-# 						   amz_trans_info.total,
-# 						   amz_trans_info.fulfillment_channel,
-# 					 	   amz_trans_info.marketplace
-# 					 	  ]
-# 				COMList.append(comList)
-
-# 			if amz_trans_info.marketplace == 'amazon.ca':
-# 				caList = [
-# 						   amz_trans_info.sku,
-# 					 	   amz_trans_info.quantity,
-# 						   amz_trans_info.other,
-# 						   amz_trans_info.total,
-# 						   amz_trans_info.fulfillment_channel,
-# 					 	   amz_trans_info.marketplace
-# 					 	  ]				
-# 				CAList.append(caList)
-
-# 			if amz_trans_info.marketplace == 'amazon.de':
-# 				DEList.append(amz_trans_info)
-
-# 			if amz_trans_info.marketplace == 'amazon.fr':
-# 				FRList.append(amz_trans_info)
-
-# 			if amz_trans_info.marketplace == 'amazon.it':
-# 				ITList.append(amz_trans_info)
-
-# 			if amz_trans_info.marketplace == 'amazon.es':
-# 				ESList.append(amz_trans_info)
-
-# 			if amz_trans_info.marketplace in ('amazon.co.uk'):
-# 				ukList = [amz_trans_info.sku,
-# 					 	   amz_trans_info.quantity,
-# 						   amz_trans_info.other,
-# 						   amz_trans_info.total,
-# 						   amz_trans_info.fulfillment_channel,
-# 					 	   amz_trans_info.marketplace
-# 					 	  ]	
-# 				UKList.append(ukList)
-
-		
-# 		if len(COMList)!=0:
-# 			com_sheet = Workbook.add_worksheet('com')
-# 			com_sheet.set_column('A:I',20)
-# 			com_sheet.write(0,0,'sku')
-# 			com_sheet.write(0,1,'quantity')
-# 			com_sheet.write(0,2,'total')
-# 			com_sheet.write(0,3,'profit ')
-# 			com_sheet.write(0,4,'fulfillment_channel')
-# 			com_sheet.write(0,5,'station')
-# 			COMrows = len(COMList)
-# 			COMcols = len(COMList[0])
-# 			for comRow in range(1,COMrows+1):
-# 				for comCol in range(0,COMcols):
-# 					if COMList[0][5] == 'amazon.com':
-# 						com_sheet.write(comRow,comCol,COMList[comRow-1][comCol])
-# 					else:
-# 						continue
-
-# 		if len(CAList)!=0:
-# 			ca_sheet = Workbook.add_worksheet('CA')
-# 			ca_sheet.set_column('A:I',20)
-# 			ca_sheet.write(0,0,'sku')
-# 			ca_sheet.write(0,1,'quantity')
-# 			ca_sheet.write(0,2,'total')
-# 			ca_sheet.write(0,3,'profit')
-# 			ca_sheet.write(0,4,'fulfillment_channel')
-# 			ca_sheet.write(0,5,'station')
-# 			CArows = len(CAList)
-# 			CAcols = len(CAList[0])
-# 			for caRow in range(1,CArows+1):
-# 				for caCol in range(0,CAcols):
-# 					if CAList[0][5] == 'amazon.ca':
-# 						ca_sheet.write(caRow,caCol,CAList[caRow-1][caCol])
-# 					else:
-# 						continue
-
-# 		# add the other station's sku which is not in german into DEList
-# 		for frList in FRList:
-# 			if frList.sku  not in [deList.sku for deList in DEList]:
-# 				DEList.append(frList)
-
-# 		for itList in ITList:
-# 			if itList.sku not in [deList.sku for deList in DEList]:
-# 				DEList.append(itList)
-
-# 		for esList in ESList:
-# 			if esList.sku not in [deList.sku for deList in DEList]:
-# 				DEList.append(esList)
-
-# 		# add up quantity,total,profit of commen sku
-# 		for deList in DEList:
-# 			for frList in FRList:
-# 				if  deList.sku == frList.sku and deList.marketplace != frList.marketplace:
-# 					deList.quantity+=frList.quantity
-# 					deList.other+=frList.other
-# 					deList.total+=frList.total
-
-# 			for itList in ITList:
-# 				if  deList.sku == itList.sku and deList.marketplace != itList.marketplace:
-# 					deList.quantity+=itList.quantity
-# 					deList.other+=itList.other
-# 					deList.total+=itList.total
-					
-				
-# 			for esList in ESList:
-# 				if  deList.sku == esList.sku and deList.marketplace != esList.marketplace:
-# 					deList.quantity+=esList.quantity
-# 					deList.other+=esList.other
-# 					deList.total+=esList.total
-			
-# 			eulist = [deList.sku,
-# 					  deList.quantity,
-# 					  deList.other,
-# 					  deList.total,
-# 					  deList.fulfillment_channel,
-# 					  deList.marketplace
-# 					 ]
-# 			EUList.append(eulist)
-
-# 		if len(EUList) != 0:
-# 			eu_sheet = Workbook.add_worksheet('EU')
-# 			eu_sheet.set_column('A:I',20)
-# 			eu_sheet.write(0,0,'sku')
-# 			eu_sheet.write(0,1,'quantity')
-# 			eu_sheet.write(0,2,'total')
-# 			eu_sheet.write(0,3,'profit')
-# 			eu_sheet.write(0,4,'fulfillment_channel')
-# 			eu_sheet.write(0,5,'station')
-# 			EUrows = len(EUList)
-# 			EUcols = len(EUList[0])
-# 			for euRow in range(1,EUrows+1):
-# 				for euCol in range(0,EUcols):
-# 					if EUList[0][5] in ('amazon.de','amazon.fr','amazon.it','amazon.es'):
-# 						eu_sheet.write(euRow,euCol,EUList[euRow-1][euCol])
-# 					else:
-# 						continue
-
-
-# 		if len(UKList) != 0:
-# 			uk_sheet = Workbook.add_worksheet('UK')
-# 			uk_sheet.set_column('A:I',20)
-# 			uk_sheet.write(0,0,'sku')
-# 			uk_sheet.write(0,1,'quantity')
-# 			uk_sheet.write(0,2,'total')
-# 			uk_sheet.write(0,3,'profit ')
-# 			uk_sheet.write(0,4,'fulfillment_channel')
-# 			uk_sheet.write(0,5,'station')
-# 			# print(len(UKList))
-# 			# print(len(UKList[0]))
-# 			Ukrows = len(UKList)
-# 			Ukcols = len(UKList[0])
-# 			for ukRow in range(1,Ukrows+1):
-# 				for ukCol in range(0,Ukcols):
-# 					if UKList[0][5] == 'amazon.co.uk':
-# 						uk_sheet.write(ukRow,ukCol,UKList[ukRow-1][ukCol])
-# 					else:
-# 						continue
-
-				
-# 		Workbook.close()
-# 		print('byebye : Classify and statistics id done !')
-
-
 
 
 if __name__ == '__main__':
 
 	transaction_info_into_database()
-	#monthly_sku_qty_profit_statistics()
 	#monthly_sku_qty_profit_statistics_new()
