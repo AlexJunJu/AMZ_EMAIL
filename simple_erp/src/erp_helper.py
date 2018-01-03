@@ -76,51 +76,37 @@ def request_order_report():
         do_request_order_report(rep_type, start_date, end_date)
 
 
-#查询报表状态
 def check_report():
 
-    #查询正在生成的亚马逊各站(包括marketplace_id,name,rep_type)报表
+    #get ongoning report requests which is _SUBMITTED_ and  _IN_PROGRESS_
     ongoing_report_list = AmzReportRequest.find_ongoing_report()
 
-    print('ongoing_report_list:')
-    print(ongoing_report_list)
-
-    #定义一个字典类型，进行报表映射
+    #define a dictionery，
     rep_map = {}
     for rep in ongoing_report_list:
-       
-        #将marketplace_id、name绑定，作为key键
+        #bound (marketplace_id,name) as key
         key = (rep.marketplace_id, rep.name)
-
-        #如果key键不在字典中，定义一个链表,作为key键的 value值
+        #if the key is not in dict,define a list as the value of key
         if key not in rep_map:
             rep_map[key] = []
 
-        #将rep结果放入列表 rep_map[(rep.marketplace_id, rep.name)]中
+        #append the record of rep into  rep_map[(rep.marketplace_id, rep.name)]
+        #rep includes marketplace_id,name,rep_type,request_id,report_id,start_date,end_date,status,create_at
         rep_map[key].append(rep)
-        #print(rep_map[key])
-        #print(rep_map.items())
-    
 
     # for k, v in rep_map.iteritems():   python3 用items()替换iteritems()
     # for k, v in rep_map.items(): 用于遍历字典的（key-value）元组数组
     for k, v in rep_map.items():
 
-        #此处的v应该是rep，如果没有结果跳出本次循环
         if len(v) == 0:
             continue
 
         market_id, name = k
-        #------------------------------------------------------------print(v.marketplace_id,v.name,v.rep_type)
-        #print(name)
-
-        #调用亚马逊的接口，通过给定market_id、name
+        #get the api by offering market_id、name
         api = make_mws_api(market_id, name)
-
-        #通过生成器获取request_id
+        #get list of alerdy generated request_id by generator
         req_id_list = [data.request_id for data in v]
-
-        # #测试
+        # just for test
         # from ipdb import set_trace
         # set_trace()
         # print(req_id_list)
@@ -130,7 +116,7 @@ def check_report():
         report_info_list = req_resp.GetReportRequestListResult\
                                    .ReportRequestInfo
         
-        # #测试
+        #just for test
         print('check_report:-------------------------------------------------------->')
         print(report_info_list)
         
@@ -138,7 +124,7 @@ def check_report():
         if not report_info_list:
             continue
 
-        #用生成器生成一个以ReportRequestId为键，rep为值的键值对
+        #create a generator ReportRequestId as key，rep as value
         rep_info_map = {rep.ReportRequestId: rep for rep in report_info_list}
         #将v(即rep)的结果赋值给rep_db_list
         rep_db_list = v
@@ -274,7 +260,7 @@ def download_report():
 
 
 
-#请求获取FBA库存报表
+#request FBA sellable invenrory and reserved inventory
 def request_fba_inventory_report():
 
     #获取库存报表类型，返回的是[AmzReportRequest.FBA_INVENTORY, AmzReportRequest.RESERVED_SKU]
@@ -282,24 +268,17 @@ def request_fba_inventory_report():
     rep_types = AmzFbaInvInfo.get_report_types()
     #print(rep_types)
 
-    #获取亚马逊各站的所有信息，调用亚马逊给的接口，通过给定的类型（_GET_AFN_INVENTORY_DATA_、_GET_RESERVED_INVENTORY_DATA_）获取相应的报表
+    #get all infomation of amazon shops states，that is,marketplace_id name merchant_id key secret
+    #get corresponding report thorough api of amz by offering given type（_GET_AFN_INVENTORY_DATA_、_GET_RESERVED_INVENTORY_DATA_）
     for mws_acct in AmzMWSAccount.get_all():
-    #print(mws_acct.marketplace_id,mws_acct.name,mws_acct.merchant_id)
-    
-
-
-
-        # #测试
+        # for test
         # from ipdb import set_trace
         # set_trace()
-
-        #调用亚马逊各站的接口，通过给定各站的信息
+        # create api by offering information of shop state
         api = make_mws_api_by_account(mws_acct)
         for rep_type in rep_types:
             try:
-
                 req_resp = api.request_report(ReportType=rep_type)
-
                 #调用基类Class BaseMethod的add()方法，插入数据库？？？？
                 #AmzReportRequest(base)
                 AmzReportRequest(marketplace_id=mws_acct.marketplace_id,
@@ -315,7 +294,6 @@ def request_fba_inventory_report():
                 print(mws_acct.marketplace_id,mws_acct.name,rep_type,req_resp.RequestReportResult
                                                     .ReportRequestInfo
                                                     .ReportRequestId)
-
 
             except Exception:
                 log.exception('')

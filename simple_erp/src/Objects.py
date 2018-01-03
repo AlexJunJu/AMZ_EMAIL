@@ -88,9 +88,9 @@ class DailyInfo(object):
 		     month_average_qty):
 			
 			self.average_orders_qty = round(week_average_orders_qty*_WEEK_WEIGHT_3+
-										   fortnight_average_qty*_FOTNIGHT_WEIGHT_3+
-										   month_average_qty*_MONTHT_WEIGHT_3
-										  )
+										    fortnight_average_qty*_FOTNIGHT_WEIGHT_3+
+										    month_average_qty*_MONTHT_WEIGHT_3
+											)
 		if  (week_average_orders_qty and
 		    fortnight_average_qty and
 		    month_average_qty is None):
@@ -167,17 +167,15 @@ class DailyInfo(object):
 
 
 	def set_quantity_left_days(self,inventory_qty,inbound_qty,average_orders_qty):
-		_stock_warning_days = 50
+		_stock_warning_days = 52
 		_notificaton_days = 5
 		if (average_orders_qty != 0):
-			#self.quantity_left_days=(inventory_qty+inbound_qty) //(average_orders_qty)-35
 			if (inventory_qty+inbound_qty) //(average_orders_qty)-_stock_warning_days >_notificaton_days:
 				self.quantity_left_days = '……'
 			else:
 				self.quantity_left_days = (inventory_qty+inbound_qty) //(average_orders_qty)-_stock_warning_days
 		else:
 			if (inventory_qty+inbound_qty)<_stock_warning_days:
-				#self.quantity_left_days=("quantity<"+str(_stock_warning_days))
 				self.quantity_left_days = _stock_warning_days
 			else:
 				self.quantity_left_days= '……'
@@ -187,8 +185,8 @@ class DailyInfo(object):
 
 
 	def set_replenish_stock_qty(self,inventory_qty,inbound_qty,average_orders_qty):
-		_stock_reserved_days = 62
-		_stock_warning_days = 50
+		_stock_reserved_days = 122
+		_stock_warning_days = 52
 
 		if (average_orders_qty != 0) :
 			if (average_orders_qty*_stock_reserved_days-(inventory_qty+inbound_qty) >= 0 ):
@@ -204,7 +202,7 @@ class DailyInfo(object):
 		return self.replenish_stock_qty  
 
 
-class MothlySalesInfo(object):
+class WeeklySalesInfo(object):
 	"""docstring for DailyBusinessReport"""
 	def __init__(self):
 		pass
@@ -216,6 +214,11 @@ class MothlySalesInfo(object):
 	def get_marketpalce_id(self):
 			return self.marketplace_id
 
+	def set_name(self,name):
+		if name:
+			self.name=name 
+	def get_name(self):
+		return self.name
 
 	def set_asin(self,asin):
 		if asin: 
@@ -229,10 +232,10 @@ class MothlySalesInfo(object):
 	def get_sku(self):
 			return self.sku
 
-	def set_fba_fulfilment_fee_per_unit(self,fba_fulfilment_fee_per_unit):
-			self.fba_fulfilment_fee_per_unit = fba_fulfilment_fee_per_unit
-	def get_fba_fulfilment_fee_per_unit(self):
-			return self.fba_fulfilment_fee_per_unit
+	def set_fba_fulfillment_fee_per_unit(self,fba_fulfillment_fee_per_unit):
+			self.fba_fulfillment_fee_per_unit = fba_fulfillment_fee_per_unit
+	def get_fba_fulfillment_fee_per_unit(self):
+			return self.fba_fulfillment_fee_per_unit
 
 	def set_quantity(self,quantity):
 			self.quantity = quantity
@@ -252,10 +255,10 @@ class MothlySalesInfo(object):
 			return self.atotal_commission
 
 
-	def set_total_fba_fulfilment_fee(self,total_fba_fulfilment_fee):
-			self.total_fba_fulfilment_fee = total_fba_fulfilment_fee
-	def get_total_fba_fulfilment_fee(self):
-			return self.total_fba_fulfilment_fee
+	def set_total_fba_fulfillment_fee(self,total_fba_fulfillment_fee):
+			self.total_fba_fulfillment_fee = total_fba_fulfillment_fee
+	def get_total_fba_fulfillment_fee(self):
+			return self.total_fba_fulfillment_fee
 
 	def set_tstation(self,station):
 			self.station = station
