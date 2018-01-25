@@ -41,11 +41,13 @@ _AUTHEN_CODE_EU_Z = 'xgXrnHTpXtB8PYDD'
 _TEXT_CONTENT_E = '''
 Dear Customer：
 
-Thanks for your recent purchase. I hope you're satisfied with my products and services. 
+Thanks for your recent purchase. 
 
-Don't hesitate to contact me if you have any questions. I will try my best to assist you. 
+I hope you're satisfied with my products and services. 
 
-Thank you again. I am looking forward to serving you again in the future. 
+Don't hesitate to contact me if you have any questions, I will try my best to serve you. 
+
+Looking forward to serving you again in the future. 
 
 Yours sincerely.
 	 '''
@@ -54,8 +56,11 @@ Yours sincerely.
 _TEXT_CONTENT_D =  '''
 Liebe Kundin：
 
-vielen Dank für Ihren Einkauf. Wir hoffen, dass Sie mit unseren Produkten und Service zufrieden sind.
+vielen Dank für Ihren Einkauf. 
+
+Wir hoffen, dass Sie mit unseren Produkten und Service zufrieden sind.
 Sollten Sie Fragen haben, stehen wir Ihnen gerne zur Verfügung und versuchen unser Bestes, um Ihnen zu helfen.
+
 Wir freuen uns bereits jetzt auf Ihren nächsten Einkauf!
 
 Mit freundlichen Grüßen,
@@ -167,10 +172,6 @@ def  send_email_to_buyer(buyerOrder,msg):
 
 def get_buyer_email_by_payments_last_day():
 	return AmzSellerOrder.get_buyer_email_by_payments_last_day()
-
-
-
-
 
 
 #if __name__ == '__main__':
