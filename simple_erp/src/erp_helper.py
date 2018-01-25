@@ -18,11 +18,9 @@ MOCKUP_TEST = False
 
 
 def do_request_order_report(rep_type, start_date, end_date):
-
-    #遍历亚马逊各站的market_id,name,merchant_id,
+    # iterate each satation's market_id,name,merchant_id
     for mws_acct in AmzMWSAccount.get_all():
-
-        #获取亚马逊后台已经生成报表
+        #get already generated report
         obj = AmzReportRequest.get_request(market_id=mws_acct.marketplace_id,
                                            name=mws_acct.name,
                                            rep_type=rep_type,
@@ -61,17 +59,22 @@ def do_request_order_report(rep_type, start_date, end_date):
 
 def request_order_report():
 
-    #格式化时间字符串
+    # strftime stringfy tuple of datime
     def _formate_date(d):
         return d.strftime('%Y-%m-%dT00:00:00Z')
 
+    # datetime.now() is local datetime
+    # datetime.utcnow() is world time,that is,GMT
+    # type of datetime.utcnow() is tuple 
     now = datetime.utcnow()
+
+    # satrt_time,end_time set the time interval during which the report is
     start_date = _formate_date(now - timedelta(days=3))
     end_date = _formate_date(now + timedelta(days=1))
 
     rep_types = AmzSellerOrder.get_report_types()
 
-    #下载报表
+    #request report according type of report and datetime interval
     for rep_type in rep_types:
         do_request_order_report(rep_type, start_date, end_date)
 
@@ -89,7 +92,6 @@ def check_report():
         #if the key is not in dict,define a list as the value of key
         if key not in rep_map:
             rep_map[key] = []
-
         #append the record of rep into  rep_map[(rep.marketplace_id, rep.name)]
         #rep includes marketplace_id,name,rep_type,request_id,report_id,start_date,end_date,status,create_at
         rep_map[key].append(rep)
@@ -97,10 +99,8 @@ def check_report():
     # for k, v in rep_map.iteritems():   python3 用items()替换iteritems()
     # for k, v in rep_map.items(): 用于遍历字典的（key-value）元组数组
     for k, v in rep_map.items():
-
         if len(v) == 0:
             continue
-
         market_id, name = k
         #get the api by offering market_id、name
         api = make_mws_api(market_id, name)
@@ -130,20 +130,12 @@ def check_report():
         rep_db_list = v
 
         for rep_db in rep_db_list:
-
             rep_info = rep_info_map[rep_db.request_id]
-
-            # #测试
+            # just fot test
             # print(rep_info_map[rep_db.request_id])
-
             rep_db.status = rep_info.ReportProcessingStatus
             if rep_db.status == AmzReportRequest.ST_DONE:
                 rep_db.report_id = rep_info.GeneratedReportId
-            #--------------------------------------------------------是不是少了---------------------------------------
-            #     # rep.start_date = rep.info.StartDate
-            #     # rep.start_date = rep.info.EndDate
-            #     rep_db.update(True)
-            # else:
                 rep_db.update(False)
 
         BaseMethod.commit()
@@ -151,12 +143,9 @@ def check_report():
 
 def do_sync_report_data(report_list, model):
     
-
     def _get_report(api, report_id):
         while True:
             try:
-
-
                 # from ipdb import set_trace
                 # set_trace()
                 #print (type(api.get_report(ReportId=report_id)))
@@ -184,38 +173,31 @@ def do_sync_report_data(report_list, model):
         # print(api)
         # print(rep.report_id)  
         rep_data = _get_report(api, rep.report_id)
-       
-
-
-
+    
         # #save data to file
         # with open('./%s_%s.csv' % (rep.rep_type, rep.report_id),'w',encoding='utf-8') as fp:
         #     fp.write(rep_data.decode('utf8','ignore'))
-        
-
+    
         # print(type(rep_data))
         # # rep_data.decode('utf8')
         # print(rep_data.decode('utf8','ignore'))
 
-
-        #将文本数据分行
+        # process the text
         lines = rep_data.decode('utf-8','ignore').split('\r\n')
+        # process the headrer of text
         header_line = lines[0]
         header = header_line.split('\t')
         header = [token.lower().replace('-', '_').replace(' ', '_').strip()
                   for token in header]
-        #for i in xrange(1, len(lines)):python3移除了python2的range,保留了xrange()的实现，并将xrang()重新命名为range()
+
         for i in range(1, len(lines)):
             data = {}
             line = lines[i].strip()
             if not line:
                 continue
-
             tokens = line.split('\t')
-            #for j in xrange(0, len(tokens)):python3移除了python2的range,保留了xrange()的实现，并将xrang()重新命名为range()
             for j in range(0, len(tokens)):
                 data[header[j]] = tokens[j].strip()
-
             model.save(rep.marketplace_id, rep.name, rep.rep_type, data,
                        commit=False)
 
@@ -225,7 +207,6 @@ def do_sync_report_data(report_list, model):
 
 def download_report():
     
-
     ready_report_list = AmzReportRequest.find_ready_report()
 
     def _download_inventory():
@@ -237,9 +218,6 @@ def download_report():
             log.exception('')
 
     def _download_order():
-        
-        
-
         all_orders = [rep for rep in ready_report_list
                       if rep.rep_type == AmzReportRequest.ALL_ORDER]
         fba_fbm_orders = [rep for rep in ready_report_list
@@ -251,8 +229,6 @@ def download_report():
         except Exception:
             log.exception('')
 
-
-
     # from ipdb import set_trace
     # set_trace()
     _download_inventory()
@@ -262,9 +238,8 @@ def download_report():
 
 #request FBA sellable invenrory and reserved inventory
 def request_fba_inventory_report():
-
-    #获取库存报表类型，返回的是[AmzReportRequest.FBA_INVENTORY, AmzReportRequest.RESERVED_SKU]
-    #即：['_GET_AFN_INVENTORY_DATA_', '_GET_RESERVED_INVENTORY_DATA_']
+    #type returned [AmzReportRequest.FBA_INVENTORY, AmzReportRequest.RESERVED_SKU]
+    #that is,['_GET_AFN_INVENTORY_DATA_', '_GET_RESERVED_INVENTORY_DATA_']
     rep_types = AmzFbaInvInfo.get_report_types()
     #print(rep_types)
 
@@ -279,7 +254,6 @@ def request_fba_inventory_report():
         for rep_type in rep_types:
             try:
                 req_resp = api.request_report(ReportType=rep_type)
-                #调用基类Class BaseMethod的add()方法，插入数据库？？？？
                 #AmzReportRequest(base)
                 AmzReportRequest(marketplace_id=mws_acct.marketplace_id,
                                  name=mws_acct.name,
@@ -289,7 +263,7 @@ def request_fba_inventory_report():
                                                     .ReportRequestId,
                                  report_id='',
                                  ).add()
-                #测试
+                # just for test or check
                 print('request_fba_inventory_report-------------------------------------------------------------------------------->')
                 print(mws_acct.marketplace_id,mws_acct.name,rep_type,req_resp.RequestReportResult
                                                     .ReportRequestInfo
@@ -306,8 +280,6 @@ def fetch_shipment_data():
         while True:
             try:
                 return api.list_inbound_shipment_items(ShipmentId=shipment_id)
-
-
             except Exception as ex:
                  for arg in ex.args:
                     if 'hrottled' in arg:
@@ -322,7 +294,6 @@ def fetch_shipment_data():
                 #     continue
                 # raise ex
 
-    #获取shipment的各种状态
     status_list = AmzShipmentInfo.get_shipment_avail_status()
 
     def _save_available_shipments(shipment_list):
