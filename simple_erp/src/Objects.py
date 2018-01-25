@@ -116,7 +116,7 @@ class DailyInfo(object):
 	def set_review_date(self,review_date):
 		# if (review_date > (datetime.date.today()- datetime.timedelta(days=3))):
 		#if (int(datetime.date.today().strftime('%Y%m%d'))-review_date<=2):
-		if (datetime.date.today()-datetime.datetime.strptime('%d' %review_date, "%Y%m%d").date()).days <= 2:
+		if (datetime.date.today()-datetime.datetime.strptime('%d' %review_date, "%Y%m%d").date()).days <= 3:
 			
 			#print(datetime.date.today())
 			#print(time.strptime('%d' %review_date, "%Y%m%d"))
@@ -185,7 +185,7 @@ class DailyInfo(object):
 
 
 	def set_replenish_stock_qty(self,inventory_qty,inbound_qty,average_orders_qty):
-		_stock_reserved_days = 122
+		_stock_reserved_days = 60
 		_stock_warning_days = 52
 
 		if (average_orders_qty != 0) :
@@ -205,7 +205,7 @@ class DailyInfo(object):
 class WeeklySalesInfo(object):
 	"""docstring for DailyBusinessReport"""
 	def __init__(self):
-		pass
+		self.product_name = ''
 		
 
 	def set_marketpalce_id(self,marketplace_id):
@@ -219,6 +219,18 @@ class WeeklySalesInfo(object):
 			self.name=name 
 	def get_name(self):
 		return self.name
+
+	def set_product_name(self,product_name):
+		if product_name:
+			self.product_name=product_name 
+	def get_product_name(self):
+		return self.product_name
+
+	def set_internal_code(self,internal_code):
+		if internal_code:
+			self.internal_code=internal_code 
+	def get_internal_code(self):
+		return self.internal_code
 
 	def set_asin(self,asin):
 		if asin: 
