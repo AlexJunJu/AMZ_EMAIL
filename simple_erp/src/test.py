@@ -1,25 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# from model import AmzSellerOrder 
+from view import ViewClass 
 import os
+from model import AmzSellerOrder,AmzProductCodeInfo,AmzSkuRelatedCode
 
+ViewClass.weekly_transaction_statistics_xlsx()
+#Buyer_Order = AmzSellerOrder.get_buyer_email_by_payments_last_day()
+#Buyer_Order = AmzSkuRelatedCode.get_all()
+#print(len(Buyer_Order))
 
-# Buyer_Order = AmzSellerOrder.query_average_daily_orders_qty()
-# for buyerOrder in Buyer_Order:
-# 	# print(type(buyerOrder))
-# 	print(buyerOrder.marketplace_id,
-# 		buyerOrder.name,
-# 		buyerOrder.asin,
-# 		buyerOrder.sku,
-# 		buyerOrder.last_week_quantity,
-# 		buyerOrder.fortnight_quantity,
-# 		buyerOrder.month_quantity)
-a = None
-
-if a:
-	print("true")
-else:
-	print("false")
 	
 print('byebye')
 os._exit(0)

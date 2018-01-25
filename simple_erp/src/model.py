@@ -71,26 +71,9 @@ TITLE_LIMIT = title_conf.get('title_limit')
 DEFAULT_GROUP_DESC = "('APS', 'ALL')"
 
 
-#创建数据库连接引擎
-# engine = create_engine('postgresql+psycopg2://%s:%s@%s/%s?sslmode=require' % (
-#     user, pw, host, db_name), max_overflow=20, echo=False,
-#     client_encoding='utf8')
-
-# engine_autocommit = create_engine('postgresql+psycopg2://%s:%s@%s/%s?sslmode=require' %
-#                                   (user, pw, host, db_name),
-#                                   pool_size=2, max_overflow=0,
-#                                   echo=True,
-#                                   client_encoding='utf8',
-#                                   isolation_level='AUTOCOMMIT')
-
-
-
-
 engine = create_engine('postgresql+psycopg2://%s:%s@%s/%s?sslmode=require' % (
     user, pw, '127.0.0.1:5432', db_name), max_overflow=20, echo=False,
     client_encoding='utf8')
-
-
 # engine_autocommit = create_engine('postgresql+psycopg2://%s:%s@%s/%s?sslmode=require' %
 #                                   (user, pw, '127.0.0.1:5432', db_name),
 #                                   pool_size=2, max_overflow=0,
@@ -100,28 +83,16 @@ engine = create_engine('postgresql+psycopg2://%s:%s@%s/%s?sslmode=require' % (
 #                                   
 # engine  = create_engine('postgresql+psycopg2://ecsp_dev:maxsonic@127.0.0.1:5432/ecsp_dev_db',max_overflow=20, echo=False,client_encoding='utf8')#不能用主机名，需用IP地址
 
-# engine_autocommit = create_engine('postgresql+psycopg2://ecsp_dev:maxsonic@127.0.0.1:5432/ecsp_dev_db',
-#                                   pool_size=2, max_overflow=0,
-#                                   echo=True,
-#                                   client_encoding='utf8',
-#                                   isolation_level='AUTOCOMMIT')
-
-
-
 def inspect():
     return reflection.Inspector.from_engine(engine)
 
-
 def fetchall(sql):
-    #execute() 返回值的结果？？？？
     result_proxy = DBsession.execute(sql)
-
     print(type(result_proxy))
     try:
         return result_proxy.fetchall()
     finally:
         result_proxy.close()
-
 
 def create_sql_code(proxy_table, speed_table, target, type, country, level,
                     min_score, num):
@@ -221,11 +192,7 @@ class _Session(Session):
 
 DBsession = scoped_session(sessionmaker(bind=engine, class_=_Session))
 
-# DBsession_autocommit = scoped_session(sessionmaker(bind=engine_autocommit))
-
-
-
-#创建基类模块方法，为数据库各表提供基本的公用操作
+#creat BaseMethod class to provide commen operations for other class
 class BaseMethod():
 
     #使用@staticmethod跟@classmethod，可以不需要实例化，可以直接类名.(属性)方法名()调用
@@ -234,13 +201,14 @@ class BaseMethod():
     #如果在@staticmethod中要调用到这个类的属性、方法，只能直接类名.属性名、类名.方法名
     #@classmethod因为持有cls参数，可以直接调用类的属性、方法、实例化对象，避免硬编码
 
-
-    #查询所有制定表的信息
     @classmethod
     def get_all(cls):
         return DBsession.query(cls).all()
 
-    #根据id标量（Scalar）查询相关表的信息
+    #method of scalar is similar to .one_or_more
+    #if there are many results raise  sqlalchemy.orm.exc.MultipleResultsFound
+    #if there is one result,just return it
+    #if there is no result ,return none
     @classmethod
     def get_by_id(cls, id):
         return DBsession.query(cls).filter(cls.id == id).scalar()
@@ -4783,6 +4751,8 @@ class AmzReportRequest(Base, BaseMethod):
 
     FBA_INVENTORY = '_GET_AFN_INVENTORY_DATA_'
     RESERVED_SKU = '_GET_RESERVED_INVENTORY_DATA_'
+    #get all FBA　inventory　which is archived in AMZ background
+    FBA_ALL_INVENTORY = '_GET_FBA_MYI_ALL_INVENTORY_DATA_'
 
     id = Column(BIGINT, primary_key=True)
     marketplace_id = Column(BIGINT, default=1)
@@ -4854,8 +4824,6 @@ class AmzReport(BaseMethod):
             return
 
         for k, v in json_data.items():
-        #python3将dict中的iteritems换成items
-        #for k, v in json_data.iteritems():
             if not v:
                 continue
 
@@ -5113,23 +5081,19 @@ ORDER BY asin, sku;
         return orders[0].buyer_name, orders[0].buyer_email
 
 #-----------------
-
-        
-
-
     @classmethod
     def query_latest_week_average_daily_orders_qty(cls):
         return DBsession.query(cls.marketplace_id,
-                             cls.name,
-                             cls.asin,
-                             cls.sku,
-                             (func.sum(cls.quantity)/7).label("average_orders_qty")
-                            ).filter(and_(cls.purchase_date.between((func.current_timestamp()-timedelta(days=7)),
-                                         (func.current_timestamp()-timedelta(days=0))),
-                                          cls.fulfillment_channel=="Amazon",
-                                          cls.sales_channel != 'Non-Amazon'
-                                          )
-                            ).group_by(cls.marketplace_id,cls.asin,cls.name,cls.sku).all()
+                               cls.name,
+                               cls.asin,
+                               cls.sku,
+                              (func.sum(cls.quantity)/7).label("average_orders_qty")
+                              ).filter(and_(cls.purchase_date.between((func.current_timestamp()-timedelta(days=7)),
+                                            (func.current_timestamp()-timedelta(days=0))),
+                                            cls.fulfillment_channel=="Amazon",
+                                            cls.sales_channel != 'Non-Amazon'
+                                            )
+                              ).group_by(cls.marketplace_id,cls.asin,cls.name,cls.sku).all()
 
     @classmethod
     def query_average_daily_orders_qty(cls):
@@ -5142,6 +5106,7 @@ FROM amz_seller_orders
 WHERE purchase_date BETWEEN CURRENT_DATE-7 AND CURRENT_DATE
     AND fulfillment_channel = 'Amazon'
     AND sales_channel != 'Non-Amazon'
+    AND order_status != 'Cancelled'
 GROUP BY marketplace_id,asin,name,asin,sku
 ),last_but_two_three_week as(
 SELECT 
@@ -5151,6 +5116,7 @@ FROM amz_seller_orders
 WHERE purchase_date BETWEEN CURRENT_DATE-21 AND CURRENT_DATE-7
     AND fulfillment_channel = 'Amazon'
     AND sales_channel != 'Non-Amazon'
+    AND order_status != 'Cancelled'
 GROUP BY marketplace_id,asin,name,asin,sku
 ),last_but_one_month as (
 SELECT 
@@ -5160,6 +5126,7 @@ FROM amz_seller_orders
 WHERE purchase_date BETWEEN CURRENT_DATE-51 AND CURRENT_DATE-21
     AND fulfillment_channel = 'Amazon'
     AND sales_channel != 'Non-Amazon'
+    AND order_status != 'Cancelled'
 GROUP BY marketplace_id,asin,name,asin,sku
 )
 SELECT last_week.marketplace_id,last_week.name,last_week.asin,last_week.sku,
@@ -5183,8 +5150,6 @@ ORDER BY last_week.marketplace_id ASC,last_week.name
                 '''
         return fetchall(sql_tmpl)
 
-
-
     @classmethod
     def oreder_asin_not_in_watched_asin(cls):
 
@@ -5199,34 +5164,37 @@ ORDER BY last_week.marketplace_id ASC,last_week.name
                                          cls.asin,
                                          cls.sales_channel,
                                          cls.fulfillment_channel
-                              ).order_by(desc(cls.marketplace_id))
+                              ).order_by(desc(cls.marketplace_id)
+                              ).all()
 
     @classmethod
-    def get_monthly_sales_info(cls):
+    def get_weekly_sales_info(cls):
         QtySales = DBsession.query((AmzMarketplace.id).label('marketplace_id'),
+                                   cls.name,
                                    cls.asin,
                                    cls.sku,
                                    func.sum(cls.quantity).label('quantity'),
                                    func.sum(cls.item_price).label('sales'),
                                    func.sum(cls.item_price*0.15).label('total_commission'),
                                    func.substr(cls.sales_channel,8,9).label('station')
-                                   ).filter(and_(func.substr(cls.sales_channel,8,9) == func.substr(AmzMarketplace.website,12,16),
-                                                cls.fulfillment_channel == 'Amazon',
-                                                cls.order_status == 'Shipped',
-                                                cls.purchase_date.between('2017-10-01','2017-11-01')
-                                                )
-                                   ).group_by(AmzMarketplace.id,cls.asin,cls.sku,
-                                              func.substr(cls.sales_channel,8,9).label('station')
-                                   ).order_by(asc(AmzMarketplace.id)
-                                   ).subquery()
+                           ).filter(and_(func.substr(cls.sales_channel,8,9) == func.substr(AmzMarketplace.website,12,16),
+                                         cls.fulfillment_channel == 'Amazon',
+                                         #cls.order_status == 'Shipped',
+                                         cls.payments_date.between('2017-10-01','2017-11-01')
+                                         )
+                           ).group_by(AmzMarketplace.id,cls.name,cls.asin,cls.sku,
+                                      func.substr(cls.sales_channel,8,9).label('station')
+                           ).order_by(asc(AmzMarketplace.id)
+                           ).subquery()
         return DBsession.query(QtySales.c.marketplace_id,
+                               QtySales.c.name,
                                QtySales.c.asin,
                                QtySales.c.sku,
-                               AmzCostFeeLog.fba_fulfilment_fee_per_unit,
+                               AmzCostFeeLog.fba_fulfillment_fee_per_unit,
                                QtySales.c.quantity,
                                QtySales.c.sales,
                                QtySales.c.total_commission,
-                               func.sum(QtySales.c.quantity*AmzCostFeeLog.fba_fulfilment_fee_per_unit).label('total_fba_fulfilment_fee'),
+                               func.sum(QtySales.c.quantity*AmzCostFeeLog.fba_fulfillment_fee_per_unit).label('total_fba_fulfillment_fee'),
                                QtySales.c.station
                               ).outerjoin(AmzCostFeeLog,
                                           and_(AmzCostFeeLog.marketplace_id == QtySales.c.marketplace_id,
@@ -5234,9 +5202,10 @@ ORDER BY last_week.marketplace_id ASC,last_week.name
                                                AmzCostFeeLog.sku == QtySales.c.sku
                                               )
                               ).group_by(QtySales.c.marketplace_id,
+                                         QtySales.c.name,
                                          QtySales.c.asin,
                                          QtySales.c.sku,
-                                         AmzCostFeeLog.fba_fulfilment_fee_per_unit,
+                                         AmzCostFeeLog.fba_fulfillment_fee_per_unit,
                                          QtySales.c.quantity,
                                          QtySales.c.sales,
                                          QtySales.c.total_commission,
@@ -5245,17 +5214,19 @@ ORDER BY last_week.marketplace_id ASC,last_week.name
                               ).all()
     @classmethod
     def get_buyer_email_by_payments_last_day(cls):
-        return DBsession.query(cls).filter(and_(cls.payments_date.between(func.current_date()-timedelta(days=1),func.current_date()-timedelta(days=0)),
-                                                cls.fulfillment_channel == 'Amazon',
-                                                #cls.order_status == 'Shipped',
-                                                #cls.item_status == 'Shipped',
-                                                #cls.payments_date.between('2017-12-08 00:04:21+00','2017-12-08 11:39:00+00')
-                                                #以下两条仅为测试用
-                                                # cls.amazon_order_id == '404-1645955-5349145',
-                                                # cls.sales_channel == 'Amazon.it'
-                                                )
-                                          ).order_by(asc(cls.sales_channel),desc(cls.payments_date)
-                                          ).all()
+        return DBsession.query(cls
+            ).filter(and_(cls.payments_date.between(func.current_date()-timedelta(days=2),func.current_date()-timedelta(days=1)),
+                          #cls.fulfillment_channel == 'Amazon',
+                          #cls.asin == 'B06WP1W3TQ',
+                          #cls.order_status == 'Shipped',
+                          #cls.item_status == 'Shipped',
+                          #cls.payments_date.between('2018-01-23 20:03:00+00','2018-01-24 02:29:08+00:00'),
+                          #以下两条仅为测试用
+                          #cls.amazon_order_id == '404-1645955-5349145',
+                          cls.sales_channel == 'Amazon.de'
+                          )
+            ).order_by(asc(cls.sales_channel),asc(cls.payments_date)
+            ).all()
 
 
 class AmzSellerOrderAddress(Base, AmzReport):
@@ -5314,6 +5285,8 @@ class AmzFbaInvInfo(Base, AmzReport):
 
     @classmethod
     def get_report_types(cls):
+        #add AmzReportRequest.FBA_ALL_INVENTORY
+        ##return [AmzReportRequest.FBA_ALL_INVENTORY]
         return [AmzReportRequest.FBA_INVENTORY, AmzReportRequest.RESERVED_SKU]
 
     @classmethod
@@ -5401,12 +5374,19 @@ FULL OUTER JOIN shipment ON (
 
     @classmethod
     def save(cls, market_id, name, rep_type, json_data, commit=False):
+
         if rep_type == AmzReportRequest.RESERVED_SKU:
             json_data['condition_type'] = AmzFbaInvInfo.CT_NEW
             json_data['warehouse_condition_code'] = AmzFbaInvInfo.WCC_SELLABLE
 
         if rep_type == AmzReportRequest.FBA_INVENTORY:
+            # dict['key'] only get the value of dict which exists,or raise KeyError
+            # dcit.get(key,default=None) return default value if value not exist
             json_data['sku'] = json_data.get('seller_sku')
+
+        #processes the new rep_type of  FBA_ALL_INVENTORY   
+        if rep_type == AmzReportRequest.FBA_ALL_INVENTORY:
+            pass
 
         data = AmzFbaInvInfo.get_by_market_sku_condition(
             market_id, json_data.get('sku'), json_data.get('condition_type'),
@@ -5425,23 +5405,27 @@ FULL OUTER JOIN shipment ON (
 
     #-------------------------------
     @classmethod
-    def query_latest_fba_inv_info_order_by_nanme_desc(cls):
+    def query_latest_fba_inv_info_order_by_name_desc(cls):
 
-        Inv_Sku_Date =  DBsession.query(AmzFbaInvInfo.sku, func.max(cls.date_period).label("max_date")).group_by(cls.sku).subquery()#这是一条查询语句
+        Inv_Sku_Date =  DBsession.query(AmzFbaInvInfo.sku, 
+                                        func.max(cls.date_period).label("max_date")
+                                ).group_by(cls.sku
+                                ).subquery()
             
         return  DBsession.query(cls.marketplace_id,
-                              cls.name,
-                              cls.asin,cls.sku,
-                              cls.fnsku,
-                              cls.quantity_available,
-                              cls.reserved_qty,
-                              (cls.quantity_available+cls.reserved_qty).label("inventory_qty")#,Inv_Sku_Date,AmzFbaInvInfo.condition_type,AmzFbaInvInfo.warehouse_condition_code
-                            ).filter(and_(cls.sku == Inv_Sku_Date.c.sku, 
-                                          cls.date_period == Inv_Sku_Date.c.max_date, 
-                                          cls.condition_type =="NewItem", 
-                                          cls.warehouse_condition_code =="SELLABLE")
-                            ).order_by(desc( cls.name)
-                            ).all()
+                                cls.name,
+                                cls.asin,cls.sku,
+                                cls.fnsku,
+                                cls.quantity_available,
+                                cls.reserved_qty,
+                                (cls.quantity_available+cls.reserved_qty).label("inventory_qty")
+                                #,Inv_Sku_Date,AmzFbaInvInfo.condition_type,AmzFbaInvInfo.warehouse_condition_code
+                        ).filter(and_(cls.sku == Inv_Sku_Date.c.sku, 
+                                      cls.date_period == Inv_Sku_Date.c.max_date, 
+                                      cls.condition_type =="NewItem", 
+                                      cls.warehouse_condition_code =="SELLABLE")
+                        ).order_by(desc( cls.name)
+                        ).all()
 
 
 class AmzShipmentInfo(Base, BaseMethod):
@@ -5588,25 +5572,22 @@ WHERE info.marketplace_id = {market_id} AND info.name='{name}'
     @classmethod
     def query_shipment_info(cls):
         return  DBsession.query(cls.sku,
-                            cls.fnsku,
-                            # cls.qty_shipped,
-                            # cls.qty_received,
-                            func.sum(cls.qty_shipped-cls.qty_received).label("inbound_qty"),
-                            AmzShipmentInfo.marketplace_id,
-                            AmzShipmentInfo.name
-                             ).outerjoin(
+                                cls.fnsku,
+                                func.sum(cls.qty_shipped-cls.qty_received).label("inbound_qty"),
+                                AmzShipmentInfo.marketplace_id,
+                                AmzShipmentInfo.name
+                            ).outerjoin(
                                         AmzShipmentInfo,
                                         and_(AmzShipmentInfo.marketplace_id == cls.marketplace_id,
-                                            AmzShipmentInfo.name == cls.name,
-                                            AmzShipmentInfo.shipment_id == cls.shipment_id)
-                             ).filter(AmzShipmentInfo.shipment_status.in_(("WORKING", "SHIPPED", "IN_TRANSIT", "DELIVERED", "CHECKED_IN", "RECEIVING"))
-                             ).group_by(AmzShipmentInfo.marketplace_id,
-                                        AmzShipmentInfo.name,
-                                        cls.sku,
-                                        cls.fnsku,
-                                        # cls.qty_shipped,
-                                        # cls.qty_received
-                             ).all()
+                                        AmzShipmentInfo.name == cls.name,
+                                        AmzShipmentInfo.shipment_id == cls.shipment_id)
+                            ).filter(and_(AmzShipmentInfo.shipment_status.in_(("WORKING", "SHIPPED", "IN_TRANSIT", 
+                                                                            "DELIVERED", "CHECKED_IN", "RECEIVING")))
+                            ).group_by(AmzShipmentInfo.marketplace_id,
+                                       AmzShipmentInfo.name,
+                                       cls.sku,
+                                       cls.fnsku,
+                            ).all()
 
 
 class AmzWatchedAsin(Base, BaseMethod):
@@ -5625,7 +5606,7 @@ class AmzWatchedAsin(Base, BaseMethod):
     marketplace_id = Column(BIGINT, default=1)
     asin = Column(VARCHAR(16), nullable=False)
     rule_list = Column(BIT(varying=True), default=B'1111111111111111')
-    asin_status = Column(Integer)
+    asin_status = Column(Integer,default=1)
 
     @classmethod
     def get_by_market_rule(cls, marketplace_id, rule):
@@ -5666,6 +5647,33 @@ class AmzWatchedAsin(Base, BaseMethod):
         return int(self.rule_list, 2) & (0x1 << self.RULE_STORAGE)
 #-------------------------------------------------------------------
     @classmethod
+    def get_not_watched_asin():
+        sql_tmpl = '''
+WITH IdAsinSku AS(
+SELECT marketplaces.id,orders.asin,orders.sku,SUBSTRING(sales_channel,8,9) AS stations
+FROM amz_seller_orders AS orders
+JOIN amz_marketplaces AS marketplaces   ON (
+                                            SUBSTRING(sales_channel,8,9) = SUBSTRING(website,12,16)
+                                            )
+WHERE fulfillment_channel != 'Merchant'
+AND payments_date IS NOT NULL
+GROUP BY marketplaces.id,asin,sku,stations
+ORDER BY marketplaces.id ASC
+)
+SELECT IdAsinSku.id,IdAsinSku.asin,IdAsinSku.sku,IdAsinSku.stations
+FROM   IdAsinSku
+WHERE (IdAsinSku.id,IdAsinSku.asin) not in (
+                                            SELECT marketplace_id,asin 
+                                            FROM amz_watched_asins
+                                            WHERE asin_status IN (1,0)
+                                            )
+/* AND fulfillment_channel !='Merchant'*/
+GROUP BY IdAsinSku.id,IdAsinSku.asin,IdAsinSku.sku,IdAsinSku.stations
+ORDER BY IdAsinSku.id ASC
+        '''
+        return fetchall(sql_tmpl)
+
+    @classmethod
     def get_by_asin_status():
         return DBsession.query(cls.marketplace_id,cls.asin
                             ).filter(cls.asin_status == 1
@@ -5681,42 +5689,36 @@ class AmzWatchedAsin(Base, BaseMethod):
                                           AmzSellerOrder.asin,
                                           AmzSellerOrder.sku,
                                           func.substr(AmzMarketplace.website,12,16).label('marketplaces')
-                                          ).join(AmzSellerOrder,
-                                                 func.substr(AmzSellerOrder.sales_channel,8,9) == func.substr(AmzMarketplace.website,12,16)
-                                          ).filter(AmzSellerOrder.fulfillment_channel != 'Merchant'
-                                          ).group_by(AmzMarketplace.id,
-                                                     AmzSellerOrder.name,
-                                                     AmzSellerOrder.asin,
-                                                     AmzSellerOrder.sku,
-                                                     func.substr(AmzMarketplace.website,12,16)
-                                          ).order_by(asc(AmzMarketplace.id)
-                                          ).subquery()
-        
-
+                                    ).join(AmzSellerOrder,
+                                           func.substr(AmzSellerOrder.sales_channel,8,9) == func.substr(AmzMarketplace.website,12,16)
+                                    ).filter(AmzSellerOrder.fulfillment_channel != 'Merchant'
+                                    ).group_by(AmzMarketplace.id,
+                                               AmzSellerOrder.name,
+                                               AmzSellerOrder.asin,
+                                               AmzSellerOrder.sku,
+                                               func.substr(AmzMarketplace.website,12,16)
+                                    ).order_by(asc(AmzMarketplace.id)
+                                    ).subquery()
+    
         return DBsession.query(cls.marketplace_id,
                                AllFbaIdAsinSku.c.name,
                                cls.asin,
                                AllFbaIdAsinSku.c.sku,
                                AllFbaIdAsinSku.c.marketplaces
-                              ).filter(and_(cls.marketplace_id == AllFbaIdAsinSku.c.id,
-                                            cls.asin == AllFbaIdAsinSku.c.asin,
-                                            cls.marketplace_id.isnot(None),
-                                            cls.asin.isnot(None),
-                                            AllFbaIdAsinSku.c.sku.isnot(None),
-                                            cls.asin_status == 1
-                                            )
-                              ).group_by(cls.marketplace_id,
-                                         AllFbaIdAsinSku.c.name,
-                                         cls.asin,
-                                         AllFbaIdAsinSku.c.sku,
-                                         AllFbaIdAsinSku.c.marketplaces
-                              ).order_by(asc(cls.marketplace_id)
-                              ).all()
-
-
-
-
-
+                        ).filter(and_(cls.marketplace_id == AllFbaIdAsinSku.c.id,
+                                      cls.asin == AllFbaIdAsinSku.c.asin,
+                                      cls.marketplace_id.isnot(None),
+                                      cls.asin.isnot(None),
+                                      AllFbaIdAsinSku.c.sku.isnot(None),
+                                      cls.asin_status == 1
+                                      )
+                        ).group_by(cls.marketplace_id,
+                                   AllFbaIdAsinSku.c.name,
+                                   cls.asin,
+                                   AllFbaIdAsinSku.c.sku,
+                                   AllFbaIdAsinSku.c.marketplaces
+                        ).order_by(asc(cls.marketplace_id)
+                        ).all()
 
 class AmzAsinKwThreshold(Base, BaseMethod):
     __tablename__ = 'amz_asin_kw_threshold'
@@ -5820,29 +5822,27 @@ class AmzAsinBsrLog(Base, AmzAsinLog):
                           ).add()
 #--------------------------------------------------------------------------------------------------------
     @classmethod
-    def query_Latest_Bsr_Rank(cls):
+    def query_latest_best_seller_rank(cls):
 
         Rank_Markerplaceid_Asin_Date = DBsession.query(cls.marketplace_id,
                                                        cls.asin,
                                                        func.max(cls.create_date).label("create_date")
-                                                       ).filter(cls.seller_ranks != '{}'
-                                                       ).group_by(cls.marketplace_id,cls.asin
-                                                       ).subquery()
+                                                ).filter(cls.seller_ranks != '{}'
+                                                ).group_by(cls.marketplace_id,cls.asin
+                                                ).subquery()
 
         return DBsession.query(cls.id,
                                cls.marketplace_id,
                                cls.asin,
                                cls.seller_ranks,
                                cls.create_date
-                              ).filter(and_(cls.marketplace_id == Rank_Markerplaceid_Asin_Date.c.marketplace_id,
-                                            cls.asin == Rank_Markerplaceid_Asin_Date.c.asin,
-                                              #label("date")不能被用在filter中
-                                            cls.create_date == Rank_Markerplaceid_Asin_Date.c.create_date)
-                              ).group_by(cls.marketplace_id,cls.asin,cls.seller_ranks,cls.create_date,cls.id
-                              ).order_by (asc(cls.id)
-                              ).all()
-
-
+                        ).filter(and_(cls.marketplace_id == Rank_Markerplaceid_Asin_Date.c.marketplace_id,
+                                      cls.asin == Rank_Markerplaceid_Asin_Date.c.asin,
+                                      #label("date")不能被用在filter中
+                                      cls.create_date == Rank_Markerplaceid_Asin_Date.c.create_date)
+                        ).group_by(cls.marketplace_id,cls.asin,cls.seller_ranks,cls.create_date,cls.id
+                        ).order_by (asc(cls.id)
+                        ).all()
 
 class AmzAsinReviewLog(Base, AmzAsinLog):
     __tablename__ = 'amz_asin_review_logs'
@@ -5874,18 +5874,18 @@ class AmzAsinReviewLog(Base, AmzAsinLog):
         Max_Date = DBsession.query(cls.marketplace_id,
                                    cls.asin,
                                    func.max(cls.create_date).label("create_date")
-                                  ).group_by(cls.marketplace_id,cls.asin
-                                  ).subquery()
+                            ).group_by(cls.marketplace_id,cls.asin
+                            ).subquery()
         return DBsession.query(cls.marketplace_id,
                                cls.asin,
                                cls.review_cnt,
                                func.max(cls.create_date).label("latest_create_date")
-                              ).filter(and_(cls.marketplace_id == Max_Date.c.marketplace_id,
-                                            cls.asin == Max_Date.c.asin,
-                                            cls.create_date == Max_Date.c.create_date
-                                            )
-                              ).group_by(cls.marketplace_id,cls.asin,cls.review_cnt
-                              ).all()
+                        ).filter(and_(cls.marketplace_id == Max_Date.c.marketplace_id,
+                                      cls.asin == Max_Date.c.asin,
+                                      cls.create_date == Max_Date.c.create_date
+                                      )
+                        ).group_by(cls.marketplace_id,cls.asin,cls.review_cnt
+                        ).all()
 
 
 class AmzAsinReviewDetailLog(Base, AmzAsinLog):
@@ -5935,7 +5935,6 @@ class AmzAsinReviewDetailLog(Base, AmzAsinLog):
         if commit:
             BaseMethod.commit()
 #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#定义Business_report类
 class AmzDailyBusninessReport(Base,BaseMethod):
     
     __tablename__ = 'amz_daily_business_report'
@@ -5976,33 +5975,25 @@ class AmzDailyBusninessReport(Base,BaseMethod):
                                                 )
                                           ).all()
 
-#定义amz_cost_fee_logs类
 class AmzCostFeeLog(Base,BaseMethod):
 
-    __tablename__ = 'amz_cost_fee_logs'
+    __tablename__ = 'amz_fba_fulfillment_fee_logs'
 
     #表的结构
     id = Column(Integer, primary_key=True)
     marketplace_id =Column(Integer)
-    product_name = Column(VARCHAR(64))
-
     asin = Column(VARCHAR(64))
     sku = Column(VARCHAR(32))  
-
-    cost = Column(Numeric(10,2))
-    fba_fulfilment_fee_per_unit = Column(Numeric(10,2))
-    
-
+    fba_fulfillment_fee_per_unit = Column(Numeric(10,2))
     create_date = Column(Date)
         
-
-#定义amz_transaction_infos类
 class AmzTransactionInfo(Base,BaseMethod):
 
     __tablename__ = 'amz_transaction_infos'
 
-    #表的结构
+    #structure of table
     id = Column(Integer, primary_key=True)
+    year_month = Column(VARCHAR(64))
     date_time = Column(TIMESTAMP(timezone=False))
     settlement_id = Column(VARCHAR(32))
     type = Column(VARCHAR(32))
@@ -6010,7 +6001,7 @@ class AmzTransactionInfo(Base,BaseMethod):
     sku = Column(VARCHAR(64))
     description = Column(VARCHAR(256))
     quantity = Column(BIGINT, default=0)
-    marketplace = Column(VARCHAR(32))  
+    marketplace = Column(VARCHAR(64))  
     fulfillment_channel = Column(VARCHAR(32))
     order_city = Column(VARCHAR(256))
     order_state = Column(VARCHAR(256))
@@ -6059,11 +6050,30 @@ class AmzTransactionInfo(Base,BaseMethod):
         return DBsession.query(cls.type,
                                func.sum(cls.total).label("expenses"),
                                cls.marketplace
-                              ).filter(cls.type!="Order"
-                              ).group_by(cls.type,cls.marketplace
-                              ).order_by(cls.marketplace,cls.type
-                              ).all()
+                        ).filter(cls.type!="Order"
+                        ).group_by(cls.type,cls.marketplace
+                        ).order_by(cls.marketplace,cls.type
+                        ).all()
 
+#defined class amz_product_code_infos
+class AmzProductCodeInfo(Base,BaseMethod):
+
+    __tablename__ = 'amz_product_code_infos'
+
+    # structure of table
+    internal_code_for_product = Column(VARCHAR(32), primary_key=True)
+    abbre_name_for_product = Column(VARCHAR(32))
+    internal_name_for_product = Column(VARCHAR(32))
+    product_cost = Column(Numeric(10,2))
+
+#defined class amz_product_code_infos
+class AmzSkuRelatedCode(Base,BaseMethod):
+
+    __tablename__ = 'amz_sku_related_code'
+
+    #structure of table
+    sku = Column(VARCHAR(32), primary_key=True)
+    internal_code_for_product = Column(VARCHAR(32))
 
   
 #-------------------------------------------------------------------------------------------------------------

@@ -9,7 +9,7 @@ from decimal import Decimal
 from model import (AmzMarketplace,AmzWatchedAsin,AmzAsinInfoLog,AmzShipmentItem,
 				   AmzShipmentInfo,AmzFbaInvInfo,AmzAsinReviewLog,AmzAsinBsrLog,
 				   AmzSellerOrder,AmzDailyBusninessReport,AmzCostFeeLog,AmzTransactionInfo,
-				   BaseMethod)
+				   AmzProductCodeInfo,AmzSkuRelatedCode,BaseMethod)
 from Objects import DailyInfo,WeeklySalesInfo
 
 
@@ -33,6 +33,18 @@ class ViewClass(object):
 				marketplace.website = marketplace_info.website
 				#marketplace_list.append(marketplace)
 		return marketplace_id_list
+
+	def append_new_asin():
+		new_asin_list = AmzWatchedAsin.get_not_watched_asin()
+		for marketplace_asin in new_asin_list:
+			amz_watched_asin = AmzWatchedAsin()
+			amz_watched_asin.account_id = 13
+			amz_watched_asin.marketplace_id = marketplace_asin.marketplace_id
+			amz_watched_asin.asin = marketplace_asin.asin
+			amz_watched_asin.rule_list = '1111111111111111'
+			amz_watched_asin.asin_status = 1
+			amz_watched_asin.add(False)
+		BaseMethod.commit()
 
 	def get_watched_fba_marketplace_id_asin_sku(self,Daily_Info_List):
 		watched_id_asin_sku_list =AmzWatchedAsin.get_watched_fba_marketplace_id_asin_sku_asc()
@@ -112,6 +124,7 @@ class ViewClass(object):
 		return Daily_Info_List
 
 	def daily_info_list_new(self):
+		#append_new_asin()
 		marketplace_id_list = self.get_marketplace_info()
 		Daily_Info_List = []
 		self.get_watched_fba_marketplace_id_asin_sku(Daily_Info_List)
@@ -149,13 +162,13 @@ class ViewClass(object):
 
 		DailyInfo_List = []
 		for dailyInfo in Daily_Info_List:
-			daily_info_list = [dailyInfo.marketplace_id,dailyInfo.name,\
-							   dailyInfo.asin,dailyInfo.sku,dailyInfo.fnsku,\
+			daily_info_list = [dailyInfo.marketplace_id,dailyInfo.name,
+							   dailyInfo.asin,dailyInfo.sku,dailyInfo.fnsku,
 							   dailyInfo.review_cnt,dailyInfo.review_date,
-							   dailyInfo.available_qty,dailyInfo.reserved_qty,\
-							   dailyInfo.inventory_qty,dailyInfo.inbound_qty,\
-							   dailyInfo.average_orders_qty,dailyInfo.quantity_left_days,\
-							   dailyInfo.replenish_stock_qty,\
+							   dailyInfo.available_qty,dailyInfo.reserved_qty,
+							   dailyInfo.inventory_qty,dailyInfo.inbound_qty,
+							   dailyInfo.average_orders_qty,dailyInfo.quantity_left_days,
+							   dailyInfo.replenish_stock_qty,
 							   str(dailyInfo.seller_ranks).replace(',','\r\n')
 							  ]
 			# from ipdb import set_trace
@@ -174,189 +187,7 @@ class ViewClass(object):
 		print('byebye')
 		
 
-
-	@staticmethod
-	def weekly_transaction_statistics_xlsx():
-		YEList = []
-		USList = []
-		CAList = []
-		UKList = []
-
-		DEList = []
-		E4List = []
-
-		FRList = []
-		E3List = []
-
-		ITList = []
-		ITList_FOR_SUM = []
-
-		ESList = []
-		ESList_FOR_SUM = []
-		
-		# change Object type into list of 2_Dimension
-		def  _formate_datebase_record(state_transaction_info_list):
-			STATE_LIST = []
-			for state_transaction in state_transaction_info_list:
-				state_list = [state_transaction.marketplace_id,
-							  state_transaction.name,
-							  state_transaction.asin,
-							  state_transaction.sku,
-							  state_transaction.fba_fulfillment_fee_per_unit,
-							  state_transaction.quantity,
-							  state_transaction.sales,
-							  state_transaction.total_commission,
-							  state_transaction.total_fba_fulfillment_fee,
-							  state_transaction.station
-							 ]
-				STATE_LIST.append(state_list)
-			return STATE_LIST
-
-		def  _change_datebase_result_to_object_list(state_transaction_info_list):
-			STATE_LIST = []
-			for state_transaction in state_transaction_info_list:
-					weeklySalesInfo = WeeklySalesInfo()
-					weeklySalesInfo.set_marketpalce_id(state_transaction.marketplace_id)
-					weeklySalesInfo.set_name(state_transaction.name)
-					weeklySalesInfo.set_asin(state_transaction.asin)
-					weeklySalesInfo.set_sku(state_transaction.sku)
-					weeklySalesInfo.set_fba_fulfillment_fee_per_unit(state_transaction.fba_fulfillment_fee_per_unit)
-					weeklySalesInfo.set_quantity(state_transaction.quantity)
-					weeklySalesInfo.set_sales(state_transaction.sales)
-					weeklySalesInfo.set_total_commission(state_transaction.total_commission)
-					weeklySalesInfo.set_total_fba_fulfillment_fee(state_transaction.total_fba_fulfillment_fee)
-					weeklySalesInfo.set_tstation(state_transaction.station)
-					STATE_LIST.append(weeklySalesInfo)
-			return STATE_LIST
-
-		def _merge_trans_info_into_one_list(main_trans_info_list,states_list_of_trans_info):
-			for trans_info_list in states_list_of_trans_info:
-				for trans_info in trans_info_list:
-					if (trans_info.asin,trans_info.sku) not in [(main_trans_info.asin,main_trans_info.sku)
-																for main_trans_info in main_trans_info_list]:
-						main_trans_info_list.append(trans_info)
-			return main_trans_info_list
-
-		def _sum_QSCF_by_commen_asin_sku(main_trans_info_list,states_list_of_trans_info):
-			for trans_info_list in states_list_of_trans_info:
-				for trans_info in trans_info_list:
-					for main_trans_info in main_trans_info_list:
-						# judging condition should be careful
-						if (main_trans_info.asin == trans_info.asin
-						    and main_trans_info.sku == trans_info.sku
-						   	and main_trans_info.marketplace_id != trans_info.marketplace_id
-						   	and main_trans_info.station != trans_info.station
-						   ):
-							if main_trans_info.quantity and trans_info.quantity:
-								main_trans_info.quantity+=trans_info.quantity
-							if main_trans_info.sales and trans_info.sales:
-								main_trans_info.sales+=trans_info.sales
-							if main_trans_info.total_commission and trans_info.total_commission:
-								main_trans_info.total_commission+=trans_info.total_commission
-							if main_trans_info.total_fba_fulfillment_fee and trans_info.total_fba_fulfillment_fee:
-								main_trans_info.total_fba_fulfillment_fee+=trans_info.total_fba_fulfillment_fee
-							continue
-
-			MainTransInfoList = _formate_datebase_record(main_trans_info_list)
-			return MainTransInfoList
-
-		def _write_into_sheet(state_transaction_info_list_name,state_transaction_info_list):
-			sheet_name = state_transaction_info_list_name[:2]
-			if len(state_transaction_info_list)!=0:
-				state_sheet = Workbook.add_worksheet(sheet_name)
-				state_sheet.set_column('A:I',20)
-				state_sheet.write(0,0,'marketplace_id')
-				state_sheet.write(0,1,'name')
-				state_sheet.write(0,2,'asin')
-				state_sheet.write(0,3,'sku')
-				state_sheet.write(0,4,'fba_fulfillment_fee_per_unit')
-				state_sheet.write(0,5,'quantity')
-				state_sheet.write(0,6,'sales')
-				state_sheet.write(0,7,'total_commission')
-				state_sheet.write(0,8,'total_fba_fulfillment_fee')
-				state_sheet.write(0,9,'station')
-				StateRows = len(state_transaction_info_list)
-				StateCols = len(state_transaction_info_list[0])
-				for stateRow in range(1,StateRows+1):
-					for stateCol in range(0,StateCols):
-						if state_transaction_info_list[0][9]:
-							state_sheet.write(stateRow,stateCol,state_transaction_info_list[stateRow-1][stateCol])
-						else:
-							continue
-		# process the other europe three states
-		def _the_other_europe_3_states(E3List,ITList,ESList):
-			STATES_LIST = [ITList,ESList]
-			E3List = _merge_trans_info_into_one_list(E3List,STATES_LIST)
-			# from ipdb import set_trace
-			# set_trace()
-			EFList = _sum_QSCF_by_commen_asin_sku(E3List,STATES_LIST)
-			_write_into_sheet("EFList",EFList)
-
-		# process europe four states
-		def _all_europe_4_states(E4List,FRList,ITList,ESList): 
-			STATES_LIST = [FRList,ITList,ESList]
-			E4List = _merge_trans_info_into_one_list(E4List,STATES_LIST)
-			EUList = _sum_QSCF_by_commen_asin_sku(E4List,STATES_LIST)
-			_write_into_sheet("EUList",EUList)			
-
-		SalesInfo = AmzSellerOrder.get_weekly_sales_info()
-		for salesInfo in SalesInfo:
-			weeklySalesInfo = WeeklySalesInfo()
-			weeklySalesInfo.set_marketpalce_id(salesInfo.marketplace_id)
-			weeklySalesInfo.set_name(salesInfo.name)
-			weeklySalesInfo.set_asin(salesInfo.asin)
-			weeklySalesInfo.set_sku(salesInfo.sku)
-			weeklySalesInfo.set_fba_fulfillment_fee_per_unit(salesInfo.fba_fulfillment_fee_per_unit)
-			weeklySalesInfo.set_quantity(salesInfo.quantity)
-			weeklySalesInfo.set_sales(salesInfo.sales)
-			weeklySalesInfo.set_total_commission(salesInfo.total_commission)
-			weeklySalesInfo.set_total_fba_fulfillment_fee(salesInfo.total_fba_fulfillment_fee)
-			weeklySalesInfo.set_tstation(salesInfo.station)
-
-			if salesInfo.name == 'Yerongzhen' and salesInfo.station.replace(' ','') == 'com':
-				YEList.append(salesInfo)
-
-			if salesInfo.name == 'KingLove' and salesInfo.station.replace(' ','') == 'com':
-				USList.append(salesInfo)
-
-			if salesInfo.name == 'KingLove' and salesInfo.station.replace(' ','') == 'ca':
-				CAList.append(salesInfo)
-
-			if salesInfo.name == 'KingLove' and salesInfo.station.replace(' ','') in ('co.uk'):
-				UKList.append(salesInfo)
-
-			if salesInfo.name == 'KingLove' and salesInfo.station.replace(' ','') == 'de':
-				#results returned by datebase is list of 2 dimension in which attribute can not be set
-				DEList.append(salesInfo)
-				E4List.append(weeklySalesInfo)
-
-			if salesInfo.name == 'KingLove' and salesInfo.station.replace(' ','') == 'fr':
-				FRList.append(salesInfo)
-				E3List.append(weeklySalesInfo)
-
-			if salesInfo.name == 'KingLove' and salesInfo.station.replace(' ','') == 'it':
-				ITList.append(salesInfo)
-				ITList_FOR_SUM.append(weeklySalesInfo)
-
-			if salesInfo.name == 'KingLove' and salesInfo.station.replace(' ','') == 'es':
-				ESList.append(salesInfo)
-				ESList_FOR_SUM.append(weeklySalesInfo)
-
-		Workbook = xlsxwriter.Workbook('./%s-%s.xlsx' % ((datetime.datetime.now().year,datetime.datetime.now().month-1)))
-		_write_into_sheet("YEList",YEList)
-		_write_into_sheet("USList",USList)
-		_write_into_sheet("CAList",CAList)
-		_write_into_sheet("UKList",UKList)
-		_write_into_sheet("DEList",DEList)
-		_write_into_sheet("FRList",FRList)
-		_write_into_sheet("ITList",ITList)
-		_write_into_sheet("ESList",ESList)
-		_the_other_europe_3_states(E3List,ITList_FOR_SUM,ESList_FOR_SUM)
-		#_write_into_sheet("E3List",_formate_datebase_record(E3List))
-		# E3List of this moment/here has been changed 
-		_all_europe_4_states(E4List,_change_datebase_result_to_object_list(FRList),ITList_FOR_SUM,ESList_FOR_SUM)		
-		Workbook.close()
-		print('byebye')
+	
 		
 	
 	

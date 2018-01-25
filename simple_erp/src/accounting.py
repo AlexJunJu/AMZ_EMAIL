@@ -35,8 +35,8 @@ _MONTH_2_NO_Fr = {
 	"août":"08",
 	"sept":"09",
 	"oct":"10",
-	"nov.":"11",
-	"déc.":"12"
+	"nov":"11",
+	"déc":"12"
 }
 _MONTH_2_NO_It = {
 	"gen":"01",
@@ -67,22 +67,22 @@ _TYPE = {
 	"Adjustment":["Adjustment","Anpassung","Ajustement","Ajuste"],
 	"Debt":["Debt",],
 	"FBA Customer Return Fee":["FBA Customer Return Fee",
-							   "Erstattung durch Rückbuchung"
+							   "Erstattung durch Rückbuchung",
 							  ],
 	"FBA Inventory Fee":["FBA Inventory Fee",
 						 "Versand durch Amazon Lagergebühr",
 						 "Frais de stock Expédié par Amazon",
 						 "Costo di stoccaggio Logistica di Amazon",
-						 "Tarifas de inventario de Logística de Amazon"
+						 "Tarifas de inventario de Logística de Amazon",
 						],
 	"Order":["Order","Bestellung","Commande","Ordine","Pedido"],
 	"Refund":["Refund","Erstattung","Remboursement","Rimborso","Reembolso"],
 	"Service Fee":["Service Fee","Servicegebühr",],
-	"Transfer":["Transfer","Übertrag","Transfert","Trasferimento","Transferir"],
+	"Transfer":["Transfer","Übertrag","Transfert","Trasferimento","Transferir",],
 	"Lightning Deal Fee":["Lightning Deal Fee",
 						  "Blitzangebotsgebühr",
 						  "Tarif de la Vente Flash",
-						  "Tarifa de Oferta flash"
+						  "Tarifa de Oferta flash",
 						 ]
 
 }
@@ -148,7 +148,6 @@ def transaction_info_into_database():
 				date_time = "0"+date_time
 			datetime = date_time[7:11]+'-'+_MONTH_2_NO_Eg[date_time[3:6]]+'-'+date_time[:2]+date_time[11:date_time.find("GMT")-1]
 
-
 		if state in ("de","es"):
 			datetime = date_time[6:10]+'-'+date_time[3:5]+'-'+date_time[:2]+date_time[10:date_time.find('GMT')-1]
 
@@ -196,12 +195,12 @@ def transaction_info_into_database():
 			type = "Transfer"
 		if type in _TYPE["Lightning Deal Fee"] :
 			type = "Lightning Deal Fee"
-
 		return type	
 
 	def _process_file(state):
+		YEAR_MONTH = "2017Nov"
 		#read the every state csv and write into database
-		with open(file='C:\\Users\\ACEEC\\Desktop\\amz_payment\\2017AugMonthlyTransaction_%s.csv' % state,
+		with open(file='C:\\Users\\ACEEC\\Desktop\\amz_payment\\%sMonthlyTransaction_%s.csv' % (YEAR_MONTH,state),
 				  mode='r',
 				  encoding='utf-8'
 				  ) as csv_file:
@@ -220,6 +219,7 @@ def transaction_info_into_database():
 
 			for row in state_rows:
 				amz_trans_info = AmzTransactionInfo()
+				amz_trans_info.year_month = YEAR_MONTH[:4]+_MONTH_2_NO_Eg[YEAR_MONTH[4:]]
 				amz_trans_info.date_time = _formate_datetime(state,row[0])
 				amz_trans_info.settlement_id = row[1]
 				# unify as English
@@ -234,7 +234,7 @@ def transaction_info_into_database():
 					amz_trans_info.quantity = -1
 				# marketplace must be not null and must modify and unify as lower_case
 				if row[7]:
-					amz_trans_info.marketplace = row[7]
+					amz_trans_info.marketplace = row[7].lower()
 				else:
 					amz_trans_info.marketplace = _STATE_2_AMZ[state]
 				amz_trans_info.fulfillment_channel = row[8]
@@ -260,18 +260,24 @@ def transaction_info_into_database():
 					amz_trans_info.other_transaction_fees = _formate_money(state,row[19])
 					amz_trans_info.other = _formate_money(state,row[20])
 					amz_trans_info.total = _formate_money(state,row[21])
-
 				amz_trans_info.add(False)
 				#just for check out
 				print("the %s record" % NO)
 				NO += 1
-			BaseMethod.commit()
-			print('--------------------------------byebye :transaction details of %s write to database is done !------------------------' % state)
+			try:
+				BaseMethod.commit()
+			except Exception as e:
+				raise
+			else:
+				print('--------------------------------byebye :transaction details of %s write to database is done !------------------------' % state)		
 	 	
 	# # just for unit test
 	#_process_file("es")
 	
-	states = ["ye","us","ca","uk","de","fr","it","es"]
+	states = ["ye","us","ca","uk",
+	"de",
+	"fr","it","es"
+	]
 	try:
 		for state in states:
 			try:
@@ -279,7 +285,6 @@ def transaction_info_into_database():
 			except Exception as e:
 				print("------------------------%s transaction writing into database failure------------------------" % state )
 				raise
-				continue
 			else:
 				time.sleep(5)
 	except Exception as e:
@@ -292,7 +297,7 @@ def transaction_info_into_database():
 # process xlsx by openpysxl
 def monthly_sku_qty_profit_statistics_new():
 
-	def _list_transaction_data(amz_trans_info):
+	def _change_object_to_list(amz_trans_info):
 		trans_list = [
 					  amz_trans_info.sku,
 					  amz_trans_info.quantity,
@@ -337,11 +342,11 @@ def monthly_sku_qty_profit_statistics_new():
 		amz_trans_info.marketplace = transInfo.marketplace
 
 		if amz_trans_info.marketplace == 'amazon.com':
-			COMList.append(_list_transaction_data(amz_trans_info))
+			COMList.append(_change_object_to_list(amz_trans_info))
 		if amz_trans_info.marketplace == 'amazon.ca':
-			CAList.append(_list_transaction_data(amz_trans_info))
+			CAList.append(_change_object_to_list(amz_trans_info))
 		if amz_trans_info.marketplace in ('amazon.co.uk'):
-			UKList.append(_list_transaction_data(amz_trans_info))
+			UKList.append(_change_object_to_list(amz_trans_info))
 		if amz_trans_info.marketplace == 'amazon.de':
 			DEList.append(amz_trans_info)
 		if amz_trans_info.marketplace == 'amazon.fr':
