@@ -3,7 +3,6 @@
 import datetime,time,os
 import xlrd,xlsxwriter
 
-from utils import ClosePort
 from decimal import Decimal
 
 from model import (AmzMarketplace,AmzWatchedAsin,AmzAsinInfoLog,AmzShipmentItem,
