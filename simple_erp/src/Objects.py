@@ -167,7 +167,7 @@ class DailyInfo(object):
 
 
 	def set_quantity_left_days(self,inventory_qty,inbound_qty,average_orders_qty):
-		_stock_warning_days = 52
+		_stock_warning_days = 24
 		_notificaton_days = 5
 		if (average_orders_qty != 0):
 			if (inventory_qty+inbound_qty) //(average_orders_qty)-_stock_warning_days >_notificaton_days:
@@ -185,8 +185,8 @@ class DailyInfo(object):
 
 
 	def set_replenish_stock_qty(self,inventory_qty,inbound_qty,average_orders_qty):
-		_stock_reserved_days = 60
-		_stock_warning_days = 52
+		_stock_reserved_days = 40
+		_stock_warning_days = 24
 
 		if (average_orders_qty != 0) :
 			if (average_orders_qty*_stock_reserved_days-(inventory_qty+inbound_qty) >= 0 ):

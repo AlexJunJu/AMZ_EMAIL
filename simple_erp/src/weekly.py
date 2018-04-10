@@ -238,7 +238,29 @@ def write_into_xlsx(state_dic):
 	#_all_europe_4_states(E4List,fr_list,
 						 #it_list,es_list)		
 	Workbook.close()
-	
+
+def get_bsr_ranks():
+	seller_rank_info_list = AmzAsinBsrLog.query_latest_best_seller_rank()
+	for dailyInfo in Daily_Info_List:
+		for seller_rank_info in seller_rank_info_list:
+			if (dailyInfo.marketplace_id == seller_rank_info.marketplace_id
+				and dailyInfo.asin == seller_rank_info.asin
+				and seller_rank_info.seller_ranks):
+				dailyInfo.set_seller_ranks(seller_rank_info.seller_ranks)
+	return Daily_Info_List
+
+def get_review_info()
+	review_info_list = AmzAsinReviewLog.query_latest_review_cnt()
+	for dailyInfo in Daily_Info_List:
+		for review_info in review_info_list:
+			if ((dailyInfo.marketplace_id == review_info.marketplace_id)
+				and	(dailyInfo.asin == review_info.asin)
+				and review_info.review_cnt):
+				dailyInfo.set_review_cnt(review_info.review_cnt)
+				dailyInfo.set_review_date(review_info.latest_create_date)
+	return Daily_Info_List
+
+
 if __name__ == '__main__':
 
 	states_tuple_of_trans_info = weekly_transaction_statistics_by_state()	
