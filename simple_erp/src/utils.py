@@ -630,24 +630,78 @@ def get_asin_target_url(url_type, asin_data):
     else:
         return _get_asin_target_url_4(asin_data)
 
+#-----------------
+class SshTunnel():
+    from threading import Event
+    # Event()对象用于线程之间的通信，判断线程设置的信号标志，假则等待，真则进行
+    # 内置标志默认为FALSE
+    # set()方法可以设置对象内部的信号标志为真
+    # is_set()方法用来判断其内部信号标志的状态
+    exit = Event()
 
-#-------------------------------------------------------------------------------------
-import socket
-class ClosePort(object):
+    def __init__(self):
+        self.remote_IP = '209.9.106.163'
+        self.romote_port = 22
+        self.ssh_username = "root"
+        self.ssh_password = "maxsonic@123888"
+        self.ssh_pkey = "D:/Software/putty/db.ppk"
+        self.local_bind_address=('127.0.0.1', 5432),
+        self.remote_bind_address = ('52.40.239.158', 5432)
+
+    def get_ssh(self):
+        from sshtunnel import SSHTunnelForwarder
+        ssh =  SSHTunnelForwarder(
+                                ('209.9.106.163', 22), #Remote server IP and SSH port
+                                ssh_username = self.ssh_username,
+                                ssh_password = self.ssh_password,
+                                ssh_pkey = self.ssh_pkey,
+                                local_bind_address=('127.0.0.1', 5432),
+                                remote_bind_address = ('52.40.239.158', 5432),#binde local host
+                                )
+        return ssh
+
     @classmethod
-    def close_specific_port(cls):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        result = sock.connect_ex(('127.0.0.1',5432))
-        try:
-            if result == 0:
-                print ("Port is open")
-                sock.close()
-                print ("Port closd now")
-        except Exception as e:
-            sock.close()
-        finally:
-            sock.close()
+    def main(cls):
+        from sshtunnel import SSHTunnelForwarder
+        server =  SSHTunnelForwarder(
+                                    ('209.9.106.163', 22), #Remote server IP and SSH port
+                                    ssh_username = "root",
+                                    ssh_password = "maxsonic@123888",
+                                    ssh_pkey = "D:/Software/putty/db.ppk",
+                                    local_bind_address=('127.0.0.1', 5432),
+                                    remote_bind_address = ('52.40.239.158', 5432),#binde local host
+                                    )
+        server.start()
+
+        print("Remote server is connected through SSH_tunnel")
+        #当Event对象的内部信号标志为假时，wait()方法一直等待到其为真时才返回
+        #此时的is_set()为假
+        #while语句的判断条件为真
+        #wait()方法一直被阻塞
+        while not exit.is_set():
+           time.sleep(1)
+           exit.wait(1)
+
+        server.close()
+
+    # 信号处理函数
+    # 即通过通过一个回调函数来接收信号，会在信号出现时调用。
+    @classmethod
+    def quit(cls,signo, _frame):
+        print("Interrupted by %d, shutting down" % signo)
+        # set()方法可以设置对象内部的信号标志为真
+        exit.set()
+
+    @classmethod
+    def start(cls):
+        # signal，进程之间通讯的方式，是一种软件中断
+        # 一个进程在在执行其原来的程序流程时，如果接收到signal,会打断其原来的只需顺序，来执行处理函数
+        # SIGINT，终止进程、中断进程（control+C）信号
+        import signal
+        # signal.signal()函数来预设信号处理函数
+        signal.signal(signal.SIGINT,SshTunnel.quit)
+        SshTunnel.main()
 
 
 if __name__ == '__main__':
-    ClosePort.close_specific_port()
+    SshTunnel.start()
