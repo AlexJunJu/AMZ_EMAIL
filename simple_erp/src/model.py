@@ -59,6 +59,7 @@ host = db_conf.get("host")
 user = db_conf.get("user")
 db_name = db_conf.get("dbname")
 pw = db_conf.get("password")
+local_host_port = '127.0.0.1:5432'
 
 
 
@@ -71,17 +72,10 @@ TITLE_LIMIT = title_conf.get('title_limit')
 DEFAULT_GROUP_DESC = "('APS', 'ALL')"
 
 
-engine = create_engine('postgresql+psycopg2://%s:%s@%s/%s?sslmode=require' % (
-    user, pw, '127.0.0.1:5432', db_name), max_overflow=20, echo=False,
-    client_encoding='utf8')
-# engine_autocommit = create_engine('postgresql+psycopg2://%s:%s@%s/%s?sslmode=require' %
-#                                   (user, pw, '127.0.0.1:5432', db_name),
-#                                   pool_size=2, max_overflow=0,
-#                                   echo=True,
-#                                   client_encoding='utf8',
-#                                   isolation_level='AUTOCOMMIT')
-#                                   
-# engine  = create_engine('postgresql+psycopg2://ecsp_dev:maxsonic@127.0.0.1:5432/ecsp_dev_db',max_overflow=20, echo=False,client_encoding='utf8')#不能用主机名，需用IP地址
+engine = create_engine('postgresql+psycopg2://%s:%s@%s/%s?sslmode=require' % (user,pw,local_host_port, db_name), 
+                        max_overflow=20,
+                        echo=False,
+                        client_encoding='utf8')
 
 def inspect():
     return reflection.Inspector.from_engine(engine)
@@ -4719,12 +4713,16 @@ class AmzAccountListInfo(Base, BaseMethod):
 class AmzMWSAccount(Base, BaseMethod):
     __tablename__ = 'amz_mws_accounts'
 
+    ACTIVED_ACCOUNT = 1
+    BLOCKED_ACCOUNT = 0
+
     id = Column(BIGINT, primary_key=True)
     marketplace_id = Column(BIGINT, default=1)
     name = Column(VARCHAR(32), nullable=False)
     merchant_id = Column(VARCHAR(16), nullable=False)
     key = Column(VARCHAR(32), nullable=False)
     secret = Column(VARCHAR(64), nullable=False)
+    status = Column(BIGINT, nullable=False)
 
     @classmethod
     def get_by_market_name(cls, marketplace_id, name):
@@ -4732,6 +4730,10 @@ class AmzMWSAccount(Base, BaseMethod):
             cls.marketplace_id == marketplace_id,
             cls.name == name).first()
 
+    @classmethod
+    def get_by_account_status(cls):
+        return DBsession.query(cls).filter(
+            cls.status == cls.ACTIVED_ACCOUNT).all()
 
 class AmzReportRequest(Base, BaseMethod):
     __tablename__ = 'amz_report_requests'
@@ -4789,8 +4791,7 @@ class AmzReportRequest(Base, BaseMethod):
         return DBsession.query(cls).filter(cls.report_id != '',
                                            cls.status == cls.ST_DONE).all()
 
-    #判断亚马逊报表状态：
-    #已经生成、没数据、可下载
+    #get amazon already generated report
     def is_done(self):
         return self.status in [AmzReportRequest.ST_DONE,
                                AmzReportRequest.ST_DONE_NO_DATA,
@@ -5220,10 +5221,11 @@ ORDER BY last_week.marketplace_id ASC,last_week.name
                           #cls.asin == 'B06WP1W3TQ',
                           #cls.order_status == 'Shipped',
                           #cls.item_status == 'Shipped',
-                          #cls.payments_date.between('2018-01-23 20:03:00+00','2018-01-24 02:29:08+00:00'),
+                          #cls.payments_date.between('2018-04-07 00:22:18+00','2018-04-08 00:00:00+00'),
                           #以下两条仅为测试用
                           #cls.amazon_order_id == '404-1645955-5349145',
-                          cls.sales_channel == 'Amazon.de'
+                          #cls.sales_channel != 'Amazon.com',
+                          #cls.sales_channel != 'Amazon.ca',
                           )
             ).order_by(asc(cls.sales_channel),asc(cls.payments_date)
             ).all()
@@ -5647,7 +5649,7 @@ class AmzWatchedAsin(Base, BaseMethod):
         return int(self.rule_list, 2) & (0x1 << self.RULE_STORAGE)
 #-------------------------------------------------------------------
     @classmethod
-    def get_not_watched_asin():
+    def get_not_watched_asin(CLS):
         sql_tmpl = '''
 WITH IdAsinSku AS(
 SELECT marketplaces.id,orders.asin,orders.sku,SUBSTRING(sales_channel,8,9) AS stations
