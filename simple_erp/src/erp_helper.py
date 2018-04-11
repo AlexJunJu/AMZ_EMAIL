@@ -141,12 +141,11 @@ def do_sync_report_data(report_list, model):
 
     for rep in report_list:
         api = make_mws_api(rep.marketplace_id, rep.name)
-
-       
-        # print(api)
-        # print(rep.report_id)  
         rep_data = _get_report(api, rep.report_id)
-    
+
+        print('_download_%s_data:-------------------------------------------------------->' % rep.rep_type)
+        print(rep.marketplace_id, rep.name)
+
         # #save data to file
         # with open('./%s_%s.csv' % (rep.rep_type, rep.report_id),'w',encoding='utf-8') as fp:
         #     fp.write(rep_data.decode('utf8','ignore'))
@@ -185,8 +184,6 @@ def download_report():
         inv_requests = [rep for rep in ready_report_list
                         if rep.rep_type in AmzFbaInvInfo.get_report_types()]
         try:
-            print('_download_inventory_data:-------------------------------------------------------->')
-            print(rep.marketplace_id, rep.name)
             do_sync_report_data(inv_requests, AmzFbaInvInfo)
         except Exception:
             log.exception('')
@@ -198,8 +195,6 @@ def download_report():
                           if rep.rep_type in [AmzReportRequest.FBA_ORDER,
                                               AmzReportRequest.FBM_ORDER]]
         try:
-            print('_download_order_data:-------------------------------------------------------->')
-            print(rep.marketplace_id, rep.name)
             do_sync_report_data(all_orders, AmzSellerOrder)
             do_sync_report_data(fba_fbm_orders, AmzSellerOrder)
         except Exception:
