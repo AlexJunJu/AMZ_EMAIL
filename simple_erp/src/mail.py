@@ -176,8 +176,8 @@ def  login_and_send_email(buyerOrder,mail_info):
 			raise ex
 		else:
 			mail_server.sendmail(outbox,
-								 #buyerOrder.buyer_email,
-								 "549149676@qq.com",
+								 buyerOrder.buyer_email,
+								 #"549149676@qq.com",
 								 msg,
 								)
 			print(buyerOrder.name,
