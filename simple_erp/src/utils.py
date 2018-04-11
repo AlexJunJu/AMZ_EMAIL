@@ -631,13 +631,13 @@ def get_asin_target_url(url_type, asin_data):
         return _get_asin_target_url_4(asin_data)
 
 #-----------------
+from threading import Event
+# Event()对象用于线程之间的通信，判断线程设置的信号标志，假则等待，真则进行
+# 内置标志默认为FALSE
+# set()方法可以设置对象内部的信号标志为真
+# is_set()方法用来判断其内部信号标志的状态
+exit = Event()
 class SshTunnel():
-    from threading import Event
-    # Event()对象用于线程之间的通信，判断线程设置的信号标志，假则等待，真则进行
-    # 内置标志默认为FALSE
-    # set()方法可以设置对象内部的信号标志为真
-    # is_set()方法用来判断其内部信号标志的状态
-    exit = Event()
 
     def __init__(self):
         self.remote_IP = '209.9.106.163'
