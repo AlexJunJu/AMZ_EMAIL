@@ -39,26 +39,5 @@ def do_main():
 		
 
 
-
-
-def auto_ssh_erp_email():
-	ssh_tunnel = SshTunnel()
-	ssh = ssh_tunnel.get_ssh()
-	ssh.start()
-	time.sleep(5)
-	try:
-		from erp_helper import erp_helper
-		from mail import mail_sending_system
-		erp_helper()
-		mail_sending_system()
-	except Exception as e:
-		raise
-	else:
-		print("All jobs is done!")
-	finally:
-		ssh.close()
-
-
 if __name__ == '__main__':
-	#auto_ssh_erp_email()
 	do_main()

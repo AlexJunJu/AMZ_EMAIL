@@ -5221,11 +5221,11 @@ ORDER BY last_week.marketplace_id ASC,last_week.name
                           #cls.asin == 'B06WP1W3TQ',
                           #cls.order_status == 'Shipped',
                           #cls.item_status == 'Shipped',
-                          #cls.payments_date.between('2018-04-07 00:22:18+00','2018-04-08 00:00:00+00'),
+                          #$cls.payments_date.between('2018-04-09 04:18:43+00','2018-04-10 00:00:00+00'),
                           #以下两条仅为测试用
-                          #cls.amazon_order_id == '404-1645955-5349145',
-                          #cls.sales_channel != 'Amazon.com',
-                          #cls.sales_channel != 'Amazon.ca',
+                          #cls.amazon_order_id == '302-8533524-7972364',
+                          cls.sales_channel != 'Amazon.com',
+                          cls.sales_channel != 'Amazon.ca',
                           )
             ).order_by(asc(cls.sales_channel),asc(cls.payments_date)
             ).all()
