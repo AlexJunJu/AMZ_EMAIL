@@ -1,0 +1,158 @@
+{
+    "System": "test_system",
+
+    "MatchType": "title",
+
+    "Databases":
+    [
+        {
+            "type": "postgres",
+            "host": "localhost",
+            "sslmode":"verify-full",
+            "sslrootcert":"abc",
+            "user": "marvin",
+            "password": "maxsonic",
+            "dbname": "ecsp_db"
+        },
+        {
+            "type": "postgres",
+            "host": "localhost",
+            "sslmode":"verify-full",
+            "sslrootcert":"abc",
+            "user": "marvin",
+            "password": "maxsonic",
+            "dbname": "ecsp_db"
+        }
+    ],
+
+    "ClickDatabases":
+    [
+        {
+            "type": "postgres",
+            "host": "localhost",
+            "user": "marvin",
+            "port": 5439,
+            "password": "maxsonic",
+            "dbname": "ecsp_db"
+        },
+        {
+            "type": "postgres",
+            "host": "clicksdb.co4jewg7k6b1.us-west-2.redshift.amazonaws.com",
+            "user": "testclick",
+            "port": 5439,
+            "password": "testTest@123",
+            "dbname": "testecsp_db"
+        }
+    ],
+
+    "Redis":
+    {
+        "network": "tcp",
+        "address": ":6379",
+        "db":"6",
+        "password": "AAbb1122",
+        "pool_MaxIdle": 100,
+        "pool_MaxActive": 10000,
+        "pool_IdleTimeOut": 300
+    },
+
+    "Captcha":
+    {
+        "expiration": 300
+    },
+
+    "Jwt" :
+    {
+        "expiration": 3600,
+        "private_key": "./private.pem",
+        "public_key": "./public.pem"
+    },
+
+    "LocalDynamo" :
+    {
+        "on": true,
+        "host": "http://127.0.0.1",
+        "port": "8000"
+    },
+
+    "Kinesis":
+    {
+        "stream": "ake_test_0001",
+        "map":
+        {
+            "AKE" : "SNS"
+        }
+    },
+
+    "SNS":
+    {
+        "map":
+        {
+            "AKE":"arn:aws:sns:us-west-2:554003962964:KinesisMsgFromDataSystem"
+        }
+    },
+
+    "adwords":
+    {
+        "version": "v201509",
+        "developer_token": "Rd2BTcvczGjhm8ibRhnd4Q",
+        "user_agent": "Google Ads Python Client Library",
+        "s3_bucket": "adwords-report-test-04",
+        "interval": 300
+    },
+
+    "sync_system":
+    {
+        "frame": true,
+        "ip_address": "127.0.0.1",
+        "port": 9090
+    },
+
+    "api_service":
+    {
+        "frame": true,
+        "ip_address": "127.0.0.1",
+        "port": 6688
+    },
+
+    "Celery":
+    {
+      "broker": "redis://:AAbb1122@localhost:6379/5",
+      "backend": "redis://:AAbb1122@localhost:6379/6",
+      "expires": 3600,
+      "disabled_rate_limit": false,
+      "default_task_rate_limit": "1/s"
+    },
+
+    "send_cloud":
+    {
+      "api_user": "admin01theapptomorrow",
+      "api_key": "REXCmRREt3HIxBU9",
+      "from": "postmaster@theapptomorrow.com",
+      "fromname": "postmaster",
+      "domain": "192.168.59.103:3000"
+    },
+
+    "firefox_plugins":
+    {
+        "modify_headers": "./libs/firefox/modify_headers-0.7.1.1-fx.xpi"
+    },
+
+    "keywords":
+    {
+        "return_count": 5
+    },
+
+    "asin_title":
+    {
+        "title_limit": 8
+    },
+
+    "wechat":
+    {
+        "token": "testToken",
+        "appid": "wxTestAppid",
+        "appsecret": "wxsecretxxxxxxxx"
+    }
+}
+

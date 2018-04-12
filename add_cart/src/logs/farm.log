@@ -1,0 +1,10 @@
+2018-04-12 16:19:29,404 - ERROR - Uncaught exception
+Traceback (most recent call last):
+  File "farm.py", line 428, in <module>
+    from ipdb import set_trace
+ImportError: No module named ipdb
+2018-04-12 16:27:25,296 - ERROR - Uncaught exception
+Traceback (most recent call last):
+  File "farm.py", line 537, in <module>
+    if task_list[0].task_type == FarmTask.FARM_ORDER:
+IndexError: list index out of range
