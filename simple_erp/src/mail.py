@@ -180,19 +180,18 @@ def  login_and_send_email(buyerOrder,mail_info):
 								 #"549149676@qq.com",
 								 msg,
 								)
-			print(buyerOrder.name,
-				  buyerOrder.asin,
+			print(buyerOrder.asin,
 				  buyerOrder.amazon_order_id,
 				  buyerOrder.sales_channel,
-				  buyerOrder.payments_date)
+				  buyerOrder.payments_date,
+				  buyerOrder.name,)
 			time.sleep(random.randint(50,60))
 		finally:
 			mail_server.close()
-	else:print('%s %s %s %s temporarily Unable to complete ' % (buyerOrder.name,
-											buyerOrder.asin,
-											buyerOrder.amazon_order_id,
-											buyerOrder.sales_channel))
-
+	else:print('%s %s %s %s temporarily Unable to complete ' % (buyerOrder.asin,
+																buyerOrder.amazon_order_id,
+																buyerOrder.sales_channel,
+																buyerOrder.name,))
 
 def mail_sending_system():
 	try :
