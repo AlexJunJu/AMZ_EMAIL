@@ -18,24 +18,24 @@ _FROM_ADRESS_YE = 'yezidan@gmail.com'
 _PASSWORD_YE = ''
 
 _FROM_BACKUP_ADRESS_YE =  '2016wujunju@gmail.com'
-_BACKUP_PASSWORD_YE = 'googlewu4jun7ju8'
+_BACKUP_PASSWORD_YE = ''
 
 #customer QQXMAIL info of north american state
 _FROM_ADRESS_US = 'amazonus@aceec.cn'
-_PASSWORD_US = 'AmzUsAceec1122'
+_PASSWORD_US = ''
 #QQXMAIL Authorised code afer binding WeChat account 
-_AUTHEN_CODE_US = 'vbG7Enny2SfkSFy4'
+_AUTHEN_CODE_US = ''
 
 #customer QQXMAIL info of europe state,without Z,that is,Amaoneu
 _FROM_ADRESS_EU = 'amaoneu@aceec.cn'
-_PASSWORD_EU = 'Aceec1122'
-_AUTHEN_CODE_EU = 'QamxCbDoeVc5c56i'
+_PASSWORD_EU = ''
+_AUTHEN_CODE_EU = ''
 
 #customer QQXMAIL info of europe state,with Z,that is,Amazoneu
 _FROM_ADRESS_EU_Z = 'amazoneu@aceec.cn'
-_PASSWORD_EU_Z = 'AmzEuAceec1122'
+_PASSWORD_EU_Z = ''
 #QQXMAIL Authorised code afer binding WeChat account 
-_AUTHEN_CODE_EU_Z = 'xgXrnHTpXtB8PYDD'
+_AUTHEN_CODE_EU_Z = 'D'
 
 _QQ_SMTP_SEVER = "smtp.exmail.qq.com"
 _QQ_SMTP_PORT = 465
@@ -49,8 +49,8 @@ _EUROPE_STATES = ['Amazon.de','Amazon.co.uk','Amazon.fr','Amazon.it','Amazon.es'
 
 _SHOP_LIST = [
 	#{'SHOP':'Yerongzhen','Yerongzhen':{'Email':'yezidan@gmail.com','PASSWORD':'','AUTHEN_CODE':'','STATION':'Amazon.com'}},
-	{'SHOP':'KingLove','KingLove':{'Email':'amazonus@aceec.cn','PASSWORD':'AmzUsAceec1122','AUTHEN_CODE':'vbG7Enny2SfkSFy4','STATION':_NORTH_AMERICAN_STATES}},
-	{'SHOP':'KingLove','KingLove':{'Email':'amaoneu@aceec.cn','PASSWORD':'Aceec1122','AUTHEN_CODE':'QamxCbDoeVc5c56i','STATION':_EUROPE_STATES}},
+	{'SHOP':'KingLove','KingLove':{'Email':'amazonus@aceec.cn','PASSWORD':'','AUTHEN_CODE':'','STATION':_NORTH_AMERICAN_STATES}},
+	{'SHOP':'KingLove','KingLove':{'Email':'amaoneu@aceec.cn','PASSWORD':'','AUTHEN_CODE':'','STATION':_EUROPE_STATES}},
 
 ]
 
