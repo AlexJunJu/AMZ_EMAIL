@@ -35,12 +35,7 @@ def do_main():
 		finally:
 			ssh.close()
 	print("All jobs is done!")
-		
-<<<<<<< HEAD
-=======
-		
 
->>>>>>> ea1f2b1c1d5258298be1420381d67e8cb003c069
 
 if __name__ == '__main__':
 	do_main()
