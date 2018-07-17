@@ -27,9 +27,13 @@ class ConfirmAdult(AmzBase):
         return True
 
     def process(self):
+<<<<<<< HEAD
         # ???self.driver.get()
         self.driver.get(self.make_url())
         # can't find 'center' 'redirectUrl'
+=======
+        self.driver.get(self.make_url())
+>>>>>>> ea1f2b1c1d5258298be1420381d67e8cb003c069
         center = self.find_element(*self._center)
         if not center:
             return

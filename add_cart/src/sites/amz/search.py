@@ -26,10 +26,15 @@ class Search(AmzBase):
 
     def __init__(self, driver, params):
         AmzBase.__init__(self, driver, params)
+<<<<<<< HEAD
         # no 'keywords'
         self.keywords = params['keywords']
         self.brand = params['brand']
         #para in params not include 'group_desc'
+=======
+        self.keywords = params['keywords']
+        self.brand = params['brand']
+>>>>>>> ea1f2b1c1d5258298be1420381d67e8cb003c069
         self.group_desc = params.get('group_desc', 'aps').lower()
 
     def navigate(self):
@@ -110,8 +115,13 @@ class SearchAndGotoAsin(Search):
     def __init__(self, driver, params):
         Search.__init__(self, driver, params)
         self.market_place_id = params['market_place_id']
+<<<<<<< HEAD
         self.asin = params['asin']#None
         self.canonical_url = params.get('canonical_url', '')#None
+=======
+        self.asin = params['asin']
+        self.canonical_url = params.get('canonical_url', '')
+>>>>>>> ea1f2b1c1d5258298be1420381d67e8cb003c069
         self.variants = params.get('variants', {})\
             .get(self.asin, {})\
             .get('variants', [])
@@ -244,7 +254,12 @@ class SearchAndGotoAsin(Search):
 
         state_machine = {STATE_LOOK_FOR_1ST_PAGE: {'handle': _handle_1st_page,
                                                    'success': STATE_FOUND,
+<<<<<<< HEAD
                                                    'failure':STATE_LOOK_FOR_BRAND},
+=======
+                                                   'failure':
+                                                   STATE_LOOK_FOR_BRAND},
+>>>>>>> ea1f2b1c1d5258298be1420381d67e8cb003c069
                          STATE_LOOK_FOR_POS: {'handle': _handle_position_page,
                                               'success': STATE_FOUND,
                                               'failure': STATE_LOOK_FOR_BRAND},

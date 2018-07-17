@@ -142,7 +142,10 @@ def amz_add_to_cart(driver, account, params):
         return True
 
     def _process(driver, account, params):
+<<<<<<< HEAD
         # params.get('jp_adult_asin') exist? False
+=======
+>>>>>>> ea1f2b1c1d5258298be1420381d67e8cb003c069
         if params.get('jp_adult_asin'):
             confirm_adult = ConfirmAdult(driver, params, params['asin'])
             confirm_adult.process()

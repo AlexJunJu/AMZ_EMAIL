@@ -280,13 +280,20 @@ class MultiloginAppMgr:
 
 
 def _gen_get_account():
+<<<<<<< HEAD
 
+=======
+>>>>>>> ea1f2b1c1d5258298be1420381d67e8cb003c069
     lines = None
     with io.open('./conf/account.json', 'r', encoding='utf-8') as fp:
         lines = fp.read()
 
     json_data = json.loads(lines)
     account_list = []
+<<<<<<< HEAD
+=======
+
+>>>>>>> ea1f2b1c1d5258298be1420381d67e8cb003c069
     profile_rel = {}
     addr_rel = {}
     prj_rel = {}
@@ -305,12 +312,17 @@ def _gen_get_account():
                 telephone=data.get('telephone'),
                 telephones=data.get('telephones', ''),
             ))
+<<<<<<< HEAD
         #profile_rel = {"L3xCTS6v2@icloud.com": "06c9aed7-8bc6-4e5e-adb5-643a560a7436"}
         profile_rel[data.get('email')] = data.get('mla_profile')
 
         #None
         addr_rel[data.get('email')] = data.get('addr_id')
 
+=======
+        profile_rel[data.get('email')] = data.get('mla_profile')
+        addr_rel[data.get('email')] = data.get('addr_id')
+>>>>>>> ea1f2b1c1d5258298be1420381d67e8cb003c069
         prj_rel[data.get('email')] = {'asin': data.get('asin'),
                                       'keywords': data.get('keywords'),
                                       'promotion': data.get('promotion'),
@@ -327,7 +339,10 @@ def _gen_get_account():
     #                 if profile.country == 'de' and profile.id >= 120]  # <==
 
     def _get_account(account_id):
+<<<<<<< HEAD
 
+=======
+>>>>>>> ea1f2b1c1d5258298be1420381d67e8cb003c069
         account = account_map.get(account_id, None)
         if not account:
             return None
@@ -430,6 +445,7 @@ get_addr = _gen_get_addr()
 
 
 if __name__ == "__main__":
+<<<<<<< HEAD
 
     misc_map = {
 
@@ -437,6 +453,15 @@ if __name__ == "__main__":
             'gift_card': {'top_up_amount': 12.9},
         },
 
+=======
+    # from ipdb import set_trace
+    # set_trace()
+
+    misc_map = {
+        'B01MXYEEZS': {
+            'gift_card': {'top_up_amount': 12.9},
+        },
+>>>>>>> ea1f2b1c1d5258298be1420381d67e8cb003c069
         'B0746C2RVX': {
             'gift_card': {'top_up_amount': 9},
             'variants': ['B0746C2RVX', 'B0718TYY5P'],
@@ -459,6 +484,7 @@ if __name__ == "__main__":
     exit_nodes = ['B072NYB9GH', 'B0734TCG2L', 'B00RTL31BI', 'B00RTL31BI',
                   'B01LYN8CNK', 'B06XRWV3VB']
 
+<<<<<<< HEAD
 #task_type：  FARM_REG = 1
             # FARM_BIND_CREDIT_CARD = 2
             # FARM_ENABLE_PRIME = 3
@@ -471,6 +497,8 @@ if __name__ == "__main__":
             # FARM_CHECK_ACCOUNT = 10
 #account_id：
 
+=======
+>>>>>>> ea1f2b1c1d5258298be1420381d67e8cb003c069
     def _make_task(task_type, account_id):
         acct = get_account(account_id)
         card = get_credit_card_by_acct(acct['email'])
@@ -478,27 +506,46 @@ if __name__ == "__main__":
         # gift_card = misc_map[prj['asin']]['gift_card']
         return FarmTask(task_type,
                         params={
+<<<<<<< HEAD
                             'market_place_id': 4,#
+=======
+                            'market_place_id': 4,
+>>>>>>> ea1f2b1c1d5258298be1420381d67e8cb003c069
                             'account_id': account_id,
                             'credit_card_id':
                                 card.get('id', '') if card else '',
                             'addr_id': acct.get('addr_id', ''),
+<<<<<<< HEAD
                             'is_adult': True,#
                             'brand': prj.get('brand'),
                             'asin': prj.get('asin', ''),#
                             'keywords': prj.get('keywords', ''),#
                             'variants': misc_map,#
+=======
+                            'is_adult': True,
+                            'brand': prj.get('brand'),
+                            'asin': prj.get('asin', ''),
+                            'keywords': prj.get('keywords', ''),
+                            'variants': misc_map,
+>>>>>>> ea1f2b1c1d5258298be1420381d67e8cb003c069
                             'actual_price': prj.get('price', ''),
                             'promotion': prj.get('promotion', ''),
                             'gift_card': {
                                 'gift_card': acct.get('gift_card', '')},
                             'entry_node': random.choice(exit_nodes),
+<<<<<<< HEAD
                             'exit_node': random.choice(exit_nodes),
                             'group_desc':None#
                         })
 
     def _gen_time_gap(task_type):
 
+=======
+                            'exit_node': random.choice(exit_nodes)
+                        })
+
+    def _gen_time_gap(task_type):
+>>>>>>> ea1f2b1c1d5258298be1420381d67e8cb003c069
         def _time_gap_default():
             return random.randint(0, 1 * 10)
 
@@ -506,6 +553,7 @@ if __name__ == "__main__":
             return random.randint(60 * 60, 120 * 60)
 
         return _time_order_gap if task_type == FarmTask.FARM_ORDER\
+<<<<<<< HEAD
                                 else _time_gap_default
 
     #get amazon account of buyer in account.json
@@ -515,6 +563,17 @@ if __name__ == "__main__":
 
     if email_skip_list:
         acct_list = [acct for acct in acct_list if acct.email not in email_skip_list]
+=======
+            else _time_gap_default
+
+    acct_list = get_account_list()
+
+    email_skip_list = [
+    ]
+    if email_skip_list:
+        acct_list = [acct for acct in acct_list
+                     if acct.email not in email_skip_list]
+>>>>>>> ea1f2b1c1d5258298be1420381d67e8cb003c069
 
     email_redo_list = [
         # 'Yx_cWgpayhsP@yahoo.com', # unknown error
@@ -532,7 +591,12 @@ if __name__ == "__main__":
         'WxPI23Umo@yandex.com',
     ]
     if email_redo_list:
+<<<<<<< HEAD
         acct_list = [acct for acct in acct_list if acct.email in email_redo_list]
+=======
+        acct_list = [acct for acct in acct_list
+                     if acct.email in email_redo_list]
+>>>>>>> ea1f2b1c1d5258298be1420381d67e8cb003c069
 
     # task_list = [
     #     _make_task(FarmTask.FARM_BIND_CREDIT_CARD_PRIME, account.id)
@@ -549,12 +613,22 @@ if __name__ == "__main__":
     #     for account in acct_list
     # ]
 
+<<<<<<< HEAD
     task_list = [_make_task(FarmTask.FARM_ORDER, account.id) for account in acct_list]
+=======
+    task_list = [
+        _make_task(FarmTask.FARM_ORDER, account.id) for account in acct_list]
+>>>>>>> ea1f2b1c1d5258298be1420381d67e8cb003c069
 
     if task_list[0].task_type == FarmTask.FARM_ORDER:
         random.shuffle(task_list)
     else:
         task_list.reverse()
     set_trace()
+<<<<<<< HEAD
     MultiloginAppMgr.process(task_list,time_gap=_gen_time_gap(task_list[0].task_type))
+=======
+    MultiloginAppMgr.process(task_list,
+                             time_gap=_gen_time_gap(task_list[0].task_type))
+>>>>>>> ea1f2b1c1d5258298be1420381d67e8cb003c069
     print 'DONE'

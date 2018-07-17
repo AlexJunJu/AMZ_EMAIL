@@ -30,7 +30,7 @@ _NORTH_AMERICAN_STATES   = ['Amazon.com','Amazon.ca']
 _EUROPE_STATES = ['Amazon.de','Amazon.co.uk','Amazon.fr','Amazon.it','Amazon.es']
 
 _SHOP_LIST = [
-	
+
 	{'SHOP':'KingLove','KingLove':{'Email':'amazonus@aceec.cn','PASSWORD':'AmzUsAceec1122','AUTHEN_CODE':'o8rQpHP565JTEq7b','STATION':_NORTH_AMERICAN_STATES}},
 	{'SHOP':'KingLove','KingLove':{'Email':'amaoneu@aceec.cn','PASSWORD':'Aceec1122','AUTHEN_CODE':'T7Wexb9v7rDVkXEo','STATION':_EUROPE_STATES}},
 	{'SHOP':'GuoDong','GuoDong':{'Email':'amazoneu@guodongtouzi.com','PASSWORD':'Aceec112233','AUTHEN_CODE':'Aceec112233','STATION':_EUROPE_STATES}},
@@ -66,7 +66,9 @@ Sollten Sie Fragen haben, stehen wir Ihnen gerne zur Verfügung und versuchen un
 Wir freuen uns bereits jetzt auf Ihren nächsten Einkauf!
 
 Mit freundlichen Grüßen,
+
 King Love.
+
 	'''
 
 _ASIN_WITH_ATTACHEMT_LIST =['B078GFMYSS','B0797S298M','B079L59SVQ',
@@ -76,8 +78,10 @@ _ASIN_WITH_ATTACHEMT_LIST =['B078GFMYSS','B0797S298M','B079L59SVQ',
 							'B01LXMBZ0N','B01M4RVJDD','B01N9J8HGQ','B01MZ0C8R0','B01M7UKMR3','B01MRY3M6V','B01N4EID5B','B01MXYW4UK',
 							'B0722K8PMQ','B07116SJCZ','B071KRM6B6','B0722KDD1C','B071V8WD6G','B0718ZVCKJ','B072FHJ5G6','B072FHJNHP',
 							'B071F9JR7T','B071KXFSY7','B071DR1255','B06Y2F56SW','B01M0F5JSW','B076JDWS8F','B0742CJ4VR','B074SNBPGM',
+
 							'B074CQY1DT','B074PPPS7F','B0742JJMKD','B0742JPR1S','B07BVRGW3L']
 
+							'B074CQY1DT','B074PPPS7F','B0742JJMKD','B0742JPR1S']
 
 def get_buyer_email_by_payments_last_day():
 	return AmzSellerOrder.get_buyer_email_by_payments_last_day()
@@ -238,4 +242,6 @@ if __name__ == '__main__':
 		#mail_sending_system()
 		multi_process()
 		os._exit(0)
+
+
 

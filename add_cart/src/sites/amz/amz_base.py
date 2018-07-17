@@ -26,6 +26,7 @@ class AmzBase(BaseStep):
         params['marketplace_url'] = market_place.website
         self.url = market_place.website
         self.market_place_id = market_place_id
+<<<<<<< HEAD
 
 
 if __name__ == '__main__':
@@ -42,3 +43,5 @@ if __name__ == '__main__':
         _aaa()
         _bbb()
     ccccc()
+=======
+>>>>>>> ea1f2b1c1d5258298be1420381d67e8cb003c069

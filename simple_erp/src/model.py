@@ -5218,6 +5218,7 @@ ORDER BY last_week.marketplace_id ASC,last_week.name
         return DBsession.query(cls
             ).filter(and_(cls.payments_date.between(func.current_date()-timedelta(days=2),func.current_date()-timedelta(days=1)),
                           #cls.fulfillment_channel == 'Amazon',
+<<<<<<< HEAD
                           #cls.name == 'GuoDong'
                           #cls.asin == 'B06WP1W3TQ',
                           #cls.order_status == 'Shipped',
@@ -5226,6 +5227,15 @@ ORDER BY last_week.marketplace_id ASC,last_week.name
                           #以下两条仅为测试用
                           #cls.amazon_order_id == '302-8533524-7972364',
                           #cls.sales_channel != 'Amazon.com',
+=======
+                          #cls.asin == 'B06WP1W3TQ',
+                          #cls.order_status == 'Shipped',
+                          #cls.item_status == 'Shipped',
+                          #cls.payments_date.between('2018-04-10 09:45:40+00','2018-04-11 00:00:00+00'),
+                          #以下两条仅为测试用
+                          #cls.amazon_order_id == '302-8533524-7972364',
+                          #cls.sales_channel == 'Amazon.com',
+>>>>>>> ea1f2b1c1d5258298be1420381d67e8cb003c069
                           #cls.sales_channel != 'Amazon.ca',
                           )
             ).order_by(asc(cls.sales_channel),asc(cls.payments_date)
@@ -5419,10 +5429,16 @@ FULL OUTER JOIN shipment ON (
                                 cls.name,
                                 cls.asin,cls.sku,
                                 cls.fnsku,
+<<<<<<< HEAD
                                 (cls.quantity_available-cls.reserved_fc_transfers).label("quantity_available"),
                                 (cls.reserved_qty-cls.reserved_customerorders).label("reserved_qty"),
                                 (cls.quantity_available-cls.reserved_fc_transfers
                                 +cls.reserved_qty-cls.reserved_customerorders).label("inventory_qty")
+=======
+                                cls.quantity_available,
+                                cls.reserved_qty,
+                                (cls.quantity_available+cls.reserved_qty).label("inventory_qty")
+>>>>>>> ea1f2b1c1d5258298be1420381d67e8cb003c069
                                 #,Inv_Sku_Date,AmzFbaInvInfo.condition_type,AmzFbaInvInfo.warehouse_condition_code
                         ).filter(and_(cls.sku == Inv_Sku_Date.c.sku, 
                                       cls.date_period == Inv_Sku_Date.c.max_date, 

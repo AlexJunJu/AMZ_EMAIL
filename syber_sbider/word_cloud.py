@@ -23,6 +23,17 @@ def process_chinese():
 		text = "".join(jieba.cut(original_text))
 		return text
 
+<<<<<<< HEAD
+=======
+# optional parameters of WordCloud()
+# #Shape of WordCloud
+# mask = ''
+# background_color = 'white'
+# max_words =2000
+# font_path 
+# #numbers of color
+# random_state = 30
+>>>>>>> ea1f2b1c1d5258298be1420381d67e8cb003c069
 def generat_word_cloud(wordcloud_shape,font,text):
 	#must instantiate before call function generate(text)
 	word_cloud = WordCloud(
