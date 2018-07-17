@@ -11,8 +11,9 @@ app = Flask(__name__)
 
 @app.route('/', methods=['GET'])
 def home():
-	#view = ViewClass()
-	DailyInfoList = ViewClass.daily_info_list()
+	view = ViewClass()
+	#DailyInfoList = ViewClass.daily_info_list()
+	DailyInfoList = view.daily_info_list_new()
 	return render_template('display.html',DailyInfoList=DailyInfoList)
 
 @app.route('/business_report', methods=['GET'])

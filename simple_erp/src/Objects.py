@@ -88,9 +88,9 @@ class DailyInfo(object):
 		     month_average_qty):
 			
 			self.average_orders_qty = round(week_average_orders_qty*_WEEK_WEIGHT_3+
-										   fortnight_average_qty*_FOTNIGHT_WEIGHT_3+
-										   month_average_qty*_MONTHT_WEIGHT_3
-										  )
+										    fortnight_average_qty*_FOTNIGHT_WEIGHT_3+
+										    month_average_qty*_MONTHT_WEIGHT_3
+											)
 		if  (week_average_orders_qty and
 		    fortnight_average_qty and
 		    month_average_qty is None):
@@ -116,7 +116,7 @@ class DailyInfo(object):
 	def set_review_date(self,review_date):
 		# if (review_date > (datetime.date.today()- datetime.timedelta(days=3))):
 		#if (int(datetime.date.today().strftime('%Y%m%d'))-review_date<=2):
-		if (datetime.date.today()-datetime.datetime.strptime('%d' %review_date, "%Y%m%d").date()).days <= 2:
+		if (datetime.date.today()-datetime.datetime.strptime('%d' %review_date, "%Y%m%d").date()).days <= 3:
 			
 			#print(datetime.date.today())
 			#print(time.strptime('%d' %review_date, "%Y%m%d"))
@@ -167,17 +167,15 @@ class DailyInfo(object):
 
 
 	def set_quantity_left_days(self,inventory_qty,inbound_qty,average_orders_qty):
-		_stock_warning_days = 50
+		_stock_warning_days = 24
 		_notificaton_days = 5
 		if (average_orders_qty != 0):
-			#self.quantity_left_days=(inventory_qty+inbound_qty) //(average_orders_qty)-35
 			if (inventory_qty+inbound_qty) //(average_orders_qty)-_stock_warning_days >_notificaton_days:
 				self.quantity_left_days = '……'
 			else:
 				self.quantity_left_days = (inventory_qty+inbound_qty) //(average_orders_qty)-_stock_warning_days
 		else:
 			if (inventory_qty+inbound_qty)<_stock_warning_days:
-				#self.quantity_left_days=("quantity<"+str(_stock_warning_days))
 				self.quantity_left_days = _stock_warning_days
 			else:
 				self.quantity_left_days= '……'
@@ -187,8 +185,8 @@ class DailyInfo(object):
 
 
 	def set_replenish_stock_qty(self,inventory_qty,inbound_qty,average_orders_qty):
-		_stock_reserved_days = 62
-		_stock_warning_days = 50
+		_stock_reserved_days = 40
+		_stock_warning_days = 24
 
 		if (average_orders_qty != 0) :
 			if (average_orders_qty*_stock_reserved_days-(inventory_qty+inbound_qty) >= 0 ):
@@ -204,10 +202,10 @@ class DailyInfo(object):
 		return self.replenish_stock_qty  
 
 
-class MothlySalesInfo(object):
+class WeeklySalesInfo(object):
 	"""docstring for DailyBusinessReport"""
 	def __init__(self):
-		pass
+		self.product_name = ''
 		
 
 	def set_marketpalce_id(self,marketplace_id):
@@ -216,6 +214,23 @@ class MothlySalesInfo(object):
 	def get_marketpalce_id(self):
 			return self.marketplace_id
 
+	def set_name(self,name):
+		if name:
+			self.name=name 
+	def get_name(self):
+		return self.name
+
+	def set_product_name(self,product_name):
+		if product_name:
+			self.product_name=product_name 
+	def get_product_name(self):
+		return self.product_name
+
+	def set_internal_code(self,internal_code):
+		if internal_code:
+			self.internal_code=internal_code 
+	def get_internal_code(self):
+		return self.internal_code
 
 	def set_asin(self,asin):
 		if asin: 
@@ -229,10 +244,10 @@ class MothlySalesInfo(object):
 	def get_sku(self):
 			return self.sku
 
-	def set_fba_fulfilment_fee_per_unit(self,fba_fulfilment_fee_per_unit):
-			self.fba_fulfilment_fee_per_unit = fba_fulfilment_fee_per_unit
-	def get_fba_fulfilment_fee_per_unit(self):
-			return self.fba_fulfilment_fee_per_unit
+	def set_fba_fulfillment_fee_per_unit(self,fba_fulfillment_fee_per_unit):
+			self.fba_fulfillment_fee_per_unit = fba_fulfillment_fee_per_unit
+	def get_fba_fulfillment_fee_per_unit(self):
+			return self.fba_fulfillment_fee_per_unit
 
 	def set_quantity(self,quantity):
 			self.quantity = quantity
@@ -252,10 +267,10 @@ class MothlySalesInfo(object):
 			return self.atotal_commission
 
 
-	def set_total_fba_fulfilment_fee(self,total_fba_fulfilment_fee):
-			self.total_fba_fulfilment_fee = total_fba_fulfilment_fee
-	def get_total_fba_fulfilment_fee(self):
-			return self.total_fba_fulfilment_fee
+	def set_total_fba_fulfillment_fee(self,total_fba_fulfillment_fee):
+			self.total_fba_fulfillment_fee = total_fba_fulfillment_fee
+	def get_total_fba_fulfillment_fee(self):
+			return self.total_fba_fulfillment_fee
 
 	def set_tstation(self,station):
 			self.station = station
