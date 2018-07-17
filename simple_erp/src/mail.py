@@ -31,9 +31,9 @@ _EUROPE_STATES = ['Amazon.de','Amazon.co.uk','Amazon.fr','Amazon.it','Amazon.es'
 
 _SHOP_LIST = [
 
-	{'SHOP':'KingLove','KingLove':{'Email':'amazonus@aceec.cn','PASSWORD':'AmzUsAceec1122','AUTHEN_CODE':'o8rQpHP565JTEq7b','STATION':_NORTH_AMERICAN_STATES}},
-	{'SHOP':'KingLove','KingLove':{'Email':'amaoneu@aceec.cn','PASSWORD':'Aceec1122','AUTHEN_CODE':'T7Wexb9v7rDVkXEo','STATION':_EUROPE_STATES}},
-	{'SHOP':'GuoDong','GuoDong':{'Email':'amazoneu@guodongtouzi.com','PASSWORD':'Aceec112233','AUTHEN_CODE':'Aceec112233','STATION':_EUROPE_STATES}},
+	{'SHOP':'KingLove','KingLove':{'Email':'amazonus@aceec.cn','PASSWORD':'','AUTHEN_CODE':'','STATION':_NORTH_AMERICAN_STATES}},
+	{'SHOP':'KingLove','KingLove':{'Email':'amaoneu@aceec.cn','PASSWORD':'','AUTHEN_CODE':'','STATION':_EUROPE_STATES}},
+	{'SHOP':'GuoDong','GuoDong':{'Email':'amazoneu@guodongtouzi.com','PASSWORD':'','AUTHEN_CODE':'','STATION':_EUROPE_STATES}},
 
 ]
 
