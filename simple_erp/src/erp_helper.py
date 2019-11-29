@@ -6,11 +6,8 @@ import logging as log
 from datetime import datetime, timedelta
 from mws_utils import make_mws_api, make_mws_api_by_account
 from model import (AmzMWSAccount, AmzReportRequest, AmzSellerOrder, AmzFbaInvInfo, AmzShipmentInfo, AmzShipmentItem,AmzWatchedAsin,BaseMethod)
-#python3使用reload需要from imp import reload
 from imp import reload
 reload(sys)
-#python3 取消了setdefaultencoding
-#sys.setdefaultencoding('utf8')
 
 MOCKUP_TEST = False
 def do_request_order_report(rep_type, start_date, end_date):
@@ -33,10 +30,7 @@ def do_request_order_report(rep_type, start_date, end_date):
             req_resp = api.request_report(ReportType=rep_type,
                                           StartDate=start_date, 
                                           EndDate=end_date)
-            print('do_request_order_report-------------------------------------------------------------------------------->')
-            print(mws_acct.marketplace_id,mws_acct.name,rep_type,req_resp.RequestReportResult
-                                                                             .ReportRequestInfo
-                                                                             .ReportRequestId)
+          
             AmzReportRequest(marketplace_id=mws_acct.marketplace_id,
                              name=mws_acct.name,
                              rep_type=rep_type,
@@ -131,28 +125,11 @@ def do_sync_report_data(report_list, model):
                         time.sleep(120)
                         continue
                 raise ex
-                # if 'hrottled' in ex.message: python3去除了异常类的序列行为和.message属性
-                # if 'hrottled' == ex:
-                #     log.warning('get_report, RequestThrottled')
-                #     time.sleep(120)
-                #     continue
-                # print(type(ex))
-                # raise ex
 
     for rep in report_list:
         api = make_mws_api(rep.marketplace_id, rep.name)
         rep_data = _get_report(api, rep.report_id)
-
-        print('_download_%s_data:-------------------------------------------------------->' % rep.rep_type)
-        print(rep.marketplace_id, rep.name)
-
-        # #save data to file
-        # with open('./%s_%s.csv' % (rep.rep_type, rep.report_id),'w',encoding='utf-8') as fp:
-        #     fp.write(rep_data.decode('utf8','ignore'))
-        # print(type(rep_data))
-        # # rep_data.decode('utf8')
-        # print(rep_data.decode('utf8','ignore'))
-
+        
         # process the text
         lines = rep_data.decode('utf-8','ignore').split('\r\n')
         # process the headrer of text
@@ -221,7 +198,6 @@ def request_fba_inventory_report():
         for rep_type in rep_types:
             try:
                 req_resp = api.request_report(ReportType=rep_type)
-                #AmzReportRequest(base)
                 AmzReportRequest(marketplace_id=mws_acct.marketplace_id,
                                  name=mws_acct.name,
                                  rep_type=rep_type,
@@ -230,12 +206,6 @@ def request_fba_inventory_report():
                                                     .ReportRequestId,
                                  report_id='',
                                  ).add()
-                # just for test or check
-                print('request_fba_inventory_report-------------------------------------------------------------------------------->')
-                print(mws_acct.marketplace_id,mws_acct.name,rep_type,req_resp.RequestReportResult
-                                                                             .ReportRequestInfo
-                                                                             .ReportRequestId)
-
             except Exception:
                 log.exception('')
                 time.sleep(5)
@@ -321,8 +291,6 @@ def append_new_asin():
             BaseMethod.commit()
         except Exception as ex:
             raise ex
-        else:
-            print("append_new_asin-----------------------------------successfully!--------------------------------------------->")
     else:
         pass
 
