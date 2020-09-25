@@ -11,7 +11,7 @@
             "sslmode":"verify-full",
             "sslrootcert":"abc",
             "user": "ecsp_dev",
-            "password": "maxsonic",
+            "password": "",
             "dbname": "ecsp_dev_db"
         },
         {
@@ -20,7 +20,7 @@
             "sslmode":"verify-full",
             "sslrootcert":"abc",
             "user": "ecsp_dev",
-            "password": "maxsonic",
+            "password": "",
             "dbname": "ecsp_dev_db"
         }
     ],
@@ -32,7 +32,7 @@
             "host": "52.40.239.158",
             "user": "marvin",
             "port": 5439,
-            "password": "maxsonic",
+            "password": "",
             "dbname": "ecsp_db"
         },
         {
@@ -40,7 +40,7 @@
             "host": "clicksdb.co4jewg7k6b1.us-west-2.redshift.amazonaws.com",
             "user": "testclick",
             "port": 5439,
-            "password": "testTest@123",
+            "password": "",
             "dbname": "testecsp_db"
         }
     ],
