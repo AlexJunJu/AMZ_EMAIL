@@ -21,6 +21,6 @@ bottlenose==0.6.2
 python-dateutil==2.4.2
 python-amazon-simple-product-api==2.0.1
 selenium==2.48.0
-Pillow==3.0.0
+Pillow==8.1.1
 PyVirtualDisplay==0.1.5
 Jinja2==2.9.6
